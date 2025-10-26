@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/FTCPathVisualizer/static/css/main.6b63010b.css",
+    "main.js": "/FTCPathVisualizer/static/js/main.2325ee19.js",
+    "static/js/453.d2e6cec9.chunk.js": "/FTCPathVisualizer/static/js/453.d2e6cec9.chunk.js",
+    "static/media/DecodeField.jpg": "/FTCPathVisualizer/static/media/DecodeField.6e63a79c3d8062a201ab.jpg",
+    "index.html": "/FTCPathVisualizer/index.html",
+    "main.6b63010b.css.map": "/FTCPathVisualizer/static/css/main.6b63010b.css.map",
+    "main.2325ee19.js.map": "/FTCPathVisualizer/static/js/main.2325ee19.js.map",
+    "453.d2e6cec9.chunk.js.map": "/FTCPathVisualizer/static/js/453.d2e6cec9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6b63010b.css",
+    "static/js/main.2325ee19.js"
+  ]
+}
