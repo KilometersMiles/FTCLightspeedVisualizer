@@ -5,6 +5,7 @@ export const ROBOT_ATTRIBUTES = [
   {name: "Width", defaultValue: 15},
   {name: "Length", defaultValue: 15},
   {name: "Speed", defaultValue: 1000}, // This is in mm/s
+  {name: "Acceleration", defaultValue: 1000}, // This is in mm/s^2
   {name: "Buffer", defaultValue: 2} // This is for the path generation.
 ];
 
@@ -123,7 +124,7 @@ export const INITIAL_PATHS = [
         {
       name: "Start",
       color: getPredictableColor(0),
-      points: [
+      points: [ //these are the user defined waypoints
         {
             x: 0, //mm
             y: 0, //mm
@@ -138,7 +139,7 @@ export const INITIAL_PATHS = [
             stop: true,
         }
       ],
-      pathpoints: [
+      pathpoints: [ //these are the points that get drawn
         {x: 0, y: 0, h: 0, v: 0},  // in mm
         {x: 600, y: 0, h: 0, v: 0},  // in mm
       ]
