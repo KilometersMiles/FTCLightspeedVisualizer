@@ -116,6 +116,10 @@ function Module({ module, setModules, index, addedModules, setAddedModules, adde
     setPaths(prev => prev.filter(path => path.moduleID !== module.moduleID));
   };
 
+  const handleDeleteModule = (module) => {
+    setModules(prev => prev.filter(item => item !== module));
+  };
+
   return (
     <div>
       <div className="module-item">
@@ -129,6 +133,7 @@ function Module({ module, setModules, index, addedModules, setAddedModules, adde
       {!added && (
         <div className="module-controls">
           <button onClick={() => handleAddModule(module)}>Add</button>
+          <button onClick={() => handleDeleteModule(module)}>Delete</button>
         </div>
       )}
     </div>
