@@ -149,7 +149,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
 
     // Apply robot position (now in center-relative coords)
     ctx.translate(robot.x * scale, robot.y * scale);
-    ctx.rotate(robot.heading * Math.PI / 180);
+    ctx.rotate((robot.heading * Math.PI / 180) - Math.PI/2); // Rotate to heading, minus 90 degrees to align with coord system
     
     // Draw robot body (centered)
     ctx.fillStyle = '#3a86ff'; // Nice blue color

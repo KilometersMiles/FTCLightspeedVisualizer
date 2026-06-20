@@ -49,8 +49,8 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       ...prev,  // Keep existing robot state
       x: firstPoint.x,
       y: firstPoint.y,
-      width: robotAttributes[0].defaultValue * 25.4, // Convert to
-      length: robotAttributes[1].defaultValue * 25.4, // Convert to mm
+      width: ROBOT_ATTRIBUTES[0].defaultValue * 25.4, // Convert to
+      length: ROBOT_ATTRIBUTES[1].defaultValue * 25.4, // Convert to mm
       heading: 90 // Default heading
     }));
   };

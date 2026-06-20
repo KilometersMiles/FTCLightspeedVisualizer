@@ -1,4 +1,8 @@
-function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, obstacles, robot }) {
+import React from 'react';
+import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
+import { getPredictableColor } from '../utils/colors';
+
+function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
   return (
     <div className="module-manager">
       <div className="module-header" onClick={() => setModulesExpanded(!modulesExpanded)}>
@@ -17,14 +21,16 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
             {addedModules.map((module, index) => (
               <div className="module-container" key={index}>
                 <Module
-                  module={module} 
-                  setModules={setModules} 
-                  index={index} 
-                  addedModules={addedModules} 
-                  setAddedModules={setAddedModules} 
+                  module={module}
+                  setModules={setModules}
+                  index={index}
+                  addedModules={addedModules}
+                  setAddedModules={setAddedModules}
                   added={true}
                   paths={paths}
                   setPaths={setPaths}
+                  pathsTotal={pathsTotal}
+                  setPathsTotal={setPathsTotal}
                   obstacles={obstacles}
                 />
               </div>
@@ -35,14 +41,16 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
             {modules.map((module, index) => (
               <div className="module-container" key={index}>
                 <Module
-                  module={module} 
-                  setModules={setModules} 
-                  index={index} 
-                  addedModules={addedModules} 
-                  setAddedModules={setAddedModules} 
+                  module={module}
+                  setModules={setModules}
+                  index={index}
+                  addedModules={addedModules}
+                  setAddedModules={setAddedModules}
                   added={false}
                   paths={paths}
                   setPaths={setPaths}
+                  pathsTotal={pathsTotal}
+                  setPathsTotal={setPathsTotal}
                   obstacles={obstacles}
                   robot={robot}
                 />
@@ -55,7 +63,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
   );
 }
 
-function Module({ module, setModules, index, addedModules, setAddedModules, added, paths, setPaths, obstacles, robot }) {
+function Module({ module, setModules, index, addedModules, setAddedModules, added, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
   const handleAddModule = (newModule) => {
     var moduleID = Math.random().toString(36).substr(2, 9);
 
@@ -75,25 +83,26 @@ function Module({ module, setModules, index, addedModules, setAddedModules, adde
     const moduleFirstPoint = modulePathPoints[0];
 
     const pathPoints = generateOptimalPath(
-      { 
+      {
         name: "Connection Path",
         points: [firstPoint, moduleFirstPoint],
         startHeading: 0,
         endHeading: 0,
         headingControlType: "tangential"
-      }, 
-      obstacles, 
+      },
+      obstacles,
       robot
     );
 
     pathPoints.points = pathPoints.points.concat(modulePathPoints.slice(1));
 
+    setPathsTotal(prev => prev + 1);
+
     const newPath = {
       name: `Module: ${newModule.name}`,
+      color: getPredictableColor(pathsTotal),
       points: pathPoints.points,
-      headingControlType: newModule.path.headingControlType || "tangential",
-      startHeading: newModule.path.startHeading || 0,
-      endHeading: newModule.path.endHeading || 0,
+      pathpoints: pathPoints.points,
       moduleID: moduleID
     };
 
