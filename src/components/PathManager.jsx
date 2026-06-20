@@ -79,6 +79,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
             pathsTotal={pathsTotal}
             setPathsTotal={setPathsTotal}
             setModules={setModules}
+            modules={modules}
           />
         </div>
       ))}
@@ -98,7 +99,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
   );
 }
 
-function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, setModules }) {
+function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
   const selectOption = useRef(null); // Initialize with null
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -209,8 +210,8 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
         startHeading: 180,
         endHeading: 180,
         headingControlType: "constant",
-        getPathPoints: () => modulePoints
-        }
+        points: modulePoints
+      }
     }]);
   };
 

@@ -1,8 +1,44 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import { getPredictableColor } from '../utils/colors';
 
 function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
+  const [saveStatus, setSaveStatus] = useState('saved');
+
+  //saves and loads modules
+  useEffect(() => {
+    async function loadStoredData() {
+      if (window.electronAPI) {
+        const savedData = await window.electronAPI.getData('modules');
+        console.log(savedData);
+        if (savedData) setModules(savedData);
+      }
+    }
+    loadStoredData();
+  }, []);
+  useEffect(() => {
+    setSaveStatus('Saving...');
+
+    const delayTimer = setTimeout(() => {
+      saveModuleData();
+    }, 500);
+
+    return () => clearTimeout(delayTimer);
+
+  }, [modules]);
+
+  const saveModuleData = () => {
+    //save modules data
+    if (window.electronAPI) {
+      window.electronAPI.saveData('modules', modules);
+      async function loadStoredData() {
+        const savedData = await window.electronAPI.getData('modules');
+        console.log(savedData);
+      }
+      loadStoredData();
+    }
+  };
+
   return (
     <div className="module-manager">
       <div className="module-header" onClick={() => setModulesExpanded(!modulesExpanded)}>
@@ -42,6 +78,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
               <div className="module-container" key={index}>
                 <Module
                   module={module}
+                  modules={modules}
                   setModules={setModules}
                   index={index}
                   addedModules={addedModules}
@@ -63,7 +100,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
   );
 }
 
-function Module({ module, setModules, index, addedModules, setAddedModules, added, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
+function Module({ module, modules, setModules, index, addedModules, setAddedModules, added, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
   const handleAddModule = (newModule) => {
     var moduleID = Math.random().toString(36).substr(2, 9);
 
@@ -118,6 +155,11 @@ function Module({ module, setModules, index, addedModules, setAddedModules, adde
 
   const handleDeleteModule = (module) => {
     setModules(prev => prev.filter(item => item !== module));
+    //save new modules
+    if (window.electronAPI) {
+      window.electronAPI.saveData('modules', modules);
+    }
+
   };
 
   return (

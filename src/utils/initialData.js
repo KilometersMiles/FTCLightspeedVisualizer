@@ -27,7 +27,7 @@ export const INITIAL_MODULES = [
       startHeading: 180,
       endHeading: 180,
       headingControlType: "constant",
-      getPathPoints: () => [
+      points: [
         { x: -300, y: -600 },
         { x: -300, y: -750 },
         { x: -300, y: -1200 }
@@ -41,7 +41,7 @@ export const INITIAL_MODULES = [
       startHeading: 180,
       endHeading: 180,
       headingControlType: "constant",
-      getPathPoints: () => [
+      points: [
         { x: 300, y: -600 },
         { x: 300, y: -750 },
         { x: 300, y: -1200 }
@@ -55,13 +55,14 @@ export const INITIAL_MODULES = [
       startHeading: 180,
       endHeading: 180,
       headingControlType: "constant",
-      getPathPoints: () => [
+      points: [
         { x: 900, y: -600 },
         { x: 900, y: -750 },
           { x: 900, y: -1200 }
         ]
       }
     },
+    //these ones rely on function excecution and cannot be saved or run as is. do later
     // {
     //   name: "Shoot 3 Balls",
     //   path: {

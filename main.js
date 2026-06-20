@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
+const Store = require('electron-store').default;
+
+const store = new Store(); 
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -16,7 +19,7 @@ function createWindow() {
   win.loadURL('http://localhost:3000'); 
 
   // Optional: Open DevTools automatically to see errors
-  win.webContents.openDevTools();
+  //win.webContents.openDevTools();
 }
 
 ipcMain.handle('run-optimizer', async (event, { waypoints, obstacles }) => {
@@ -57,6 +60,13 @@ ipcMain.handle('run-optimizer', async (event, { waypoints, obstacles }) => {
   });
 });
 
+ipcMain.on('store-set', (event, { key, value }) => {
+  store.set(key, value);
+});
+
+ipcMain.handle('store-get', (event, key) => {
+  return store.get(key);
+});
 
 app.whenReady().then(() => {
   createWindow()
