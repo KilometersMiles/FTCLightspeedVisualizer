@@ -62,6 +62,39 @@ export const INITIAL_MODULES = [
         ]
       }
     },
+    // {
+    //   name: "Shoot 3 Balls",
+    //   path: {
+    //     name: "Stack 3 Approach",
+    //     startHeading: 0,
+    //     endHeading: 90,
+    //     headingControlType: "tangential",
+    //     getPathPoints: ({ paths }) => goToClosestShootingPosition(paths, robot, obstacles)
+    //   }
+    // },
+    // {
+    //   name: "Open Gate",
+    //   path: {
+    //     name: "Gate Approach",
+    //     startHeading: 0,
+    //     endHeading: 90,
+    //     headingControlType: "linear",
+    //     getPathPoints: () => [
+    //       { x: 50, y: -1200 },
+    //       { x: 50, y: -1400 }
+    //     ]
+    //   }
+    // },
+    // {
+    //   name: "Park",
+    //   path: {
+    //     name: "Park Approach",
+    //     startHeading: 0,
+    //     endHeading: 90,
+    //     headingControlType: "linear",
+    //     getPathPoints: ({ paths }) => goToClosestParkingPosition(paths, robot, obstacles)
+    //   }
+    // }
 ];
 
 export const INITIAL_OBSTACLES = [

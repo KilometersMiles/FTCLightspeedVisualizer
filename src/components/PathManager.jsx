@@ -2,37 +2,37 @@ import { useState, useRef, useCallback } from 'react';
 import { getPredictableColor } from '../utils/colors';
 import { ROBOT_ATTRIBUTES } from '../utils/initialData';
 
-function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal }) {
+function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
     //first point is by defaut the same as the last point of the previous path
     const lastPath = paths[paths.length - 1];
-    const firstPoint = lastPath ? lastPath.points[lastPath.points.length - 1] : {x: 0, y: 0, h: 0, stop: true, constrainHeading: true};
+    const firstPoint = lastPath ? lastPath.points[lastPath.points.length - 1] : { x: 0, y: 0, h: 0, stop: true, constrainHeading: true };
     // Add new path with first point at the last point of the previous path and a new point after it
     const newPoint = {
-        x: firstPoint.x + (Math.random() * 600 - 300), //
-        y: firstPoint.y + (Math.random() * 600 - 300), // Randomly within 600mm of last point
-        h: firstPoint.h || 0,
-        stop: true,
-        constrainHeading: true
+      x: firstPoint.x + (Math.random() * 600 - 300), //
+      y: firstPoint.y + (Math.random() * 600 - 300), // Randomly within 600mm of last point
+      h: firstPoint.h || 0,
+      stop: true,
+      constrainHeading: true
     };
 
     // or at (0, 0) if no paths exist
     if (paths.length > 0 && firstPoint) {
       setPaths(prev => [...prev, {
-        name: `Path ${prev.length+1}`,
-        points: [{x: firstPoint.x, y: firstPoint.y}, newPoint],
-        pathpoints: [{x: firstPoint.x, y: firstPoint.y}, newPoint],
+        name: `Path ${prev.length + 1}`,
+        points: [{ x: firstPoint.x, y: firstPoint.y }, newPoint],
+        pathpoints: [{ x: firstPoint.x, y: firstPoint.y }, newPoint],
         color: getPredictableColor(pathsTotal)
       }]);
-        
+
     } else {
       // If no paths exist, start with a default point at (0, 0)
       setPaths(prev => [...prev, {
-        name: `Path ${prev.length+1}`,
-        points: [{x: 0, y: 0}, newPoint],
-        pathpoints: [{x: 0, y: 0}, newPoint],
+        name: `Path ${prev.length + 1}`,
+        points: [{ x: 0, y: 0 }, newPoint],
+        pathpoints: [{ x: 0, y: 0 }, newPoint],
         color: getPredictableColor(pathsTotal)
       }]);
     }
@@ -62,32 +62,33 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
   };
 
   return (
-    <div className="path-manager">   
+    <div className="path-manager">
       <h5>Paths</h5>
-      
+
       {paths.map((path, index) => (
         <div key={index} className="path-container">
-          <PathInput 
-            path={path} 
+          <PathInput
+            path={path}
             paths={paths}
-            setPaths={setPaths} 
-            index={index} 
+            setPaths={setPaths}
+            index={index}
             setRobot={setRobot}
             obstacles={obstacles}
             robot={robot}
             abortControllers={abortControllers}
             pathsTotal={pathsTotal}
             setPathsTotal={setPathsTotal}
+            setModules={setModules}
           />
         </div>
       ))}
-      
+
       <div className="path-controls">
         <button onClick={handleAddPath}>
           Add Path
         </button>
-        <button 
-          onClick={handleRemovePath} 
+        <button
+          onClick={handleRemovePath}
           disabled={paths.length <= 1}
         >
           Remove Path
@@ -97,7 +98,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
   );
 }
 
-function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal }) {
+function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, setModules }) {
   const selectOption = useRef(null); // Initialize with null
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -119,7 +120,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
       const newPathPoints = [];
       for (let i = 0; i < updated[index].points.length - 1; i++) {
         const p1 = updated[index].points[i];
-        const p2 = updated[index].points[i+1];
+        const p2 = updated[index].points[i + 1];
 
         // Simple 2-point linear path for each segment
         newPathPoints.push({ x: p1.x, y: p1.y });
@@ -139,12 +140,12 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
         updated[index].points = updated[index].points.slice(0, -1);
         const newPathPoints = [];
         for (let i = 0; i < updated[index].points.length - 1; i++) {
-            const p1 = updated[index].points[i];
-            const p2 = updated[index].points[i+1];
+          const p1 = updated[index].points[i];
+          const p2 = updated[index].points[i + 1];
 
-            // Simple 2-point linear path for each segment
-            newPathPoints.push({ x: p1.x, y: p1.y });
-            newPathPoints.push({ x: p2.x, y: p2.y });
+          // Simple 2-point linear path for each segment
+          newPathPoints.push({ x: p1.x, y: p1.y });
+          newPathPoints.push({ x: p2.x, y: p2.y });
         }
         updated[index].pathpoints = newPathPoints;
 
@@ -153,49 +154,71 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
     });
   };
   // Inside PathInput component
-    const handleGeneratePath = async () => {
-      if (isLoading) {
-        return; // Prevent multiple clicks
-      }
-      setIsLoading(true);
-      const controller = new AbortController();
-      abortControllers.current[index] = controller;
-      try {
-          console.log("Starting optimization for:", path.name);
-          
-          // Call the Electron bridge
-          const optimizedPoints = await window.electronAPI.runOptimizer({
-          waypoints: path.points,
-          obstacles: obstacles
-          }, controller.signal);
+  const handleGeneratePath = async () => {
+    if (isLoading) {
+      return; // Prevent multiple clicks
+    }
+    setIsLoading(true);
+    const controller = new AbortController();
+    abortControllers.current[index] = controller;
+    try {
+      console.log("Starting optimization for:", path.name);
 
-          // Update the state with the high-resolution path
-          setPaths(prev => {
-          const updated = [...prev];
-          updated[index] = {
-              ...updated[index],
-              pathpoints: optimizedPoints // This replaces the straight lines with the curve
-          };
-          return updated;
-          });
-          console.log("Optimization completed for:", path.name);
+      // Call the Electron bridge
+      const optimizedPoints = await window.electronAPI.runOptimizer({
+        waypoints: path.points,
+        obstacles: obstacles
+      }, controller.signal);
 
-      } catch (error) {
-        if (error.name === 'AbortError') {
-              console.log(`Path ${index} generation canceled.`);
-            } else {
-              console.error("Optimization failed:", error);
-            }
-      } finally {
-        setIsLoading(false);
-        delete abortControllers.current[index];
+      // Update the state with the high-resolution path
+      setPaths(prev => {
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          pathpoints: optimizedPoints // This replaces the straight lines with the curve
+        };
+        return updated;
+      });
+      console.log("Optimization completed for:", path.name);
+
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log(`Path ${index} generation canceled.`);
+      } else {
+        console.error("Optimization failed:", error);
       }
-    };
+    } finally {
+      setIsLoading(false);
+      delete abortControllers.current[index];
+    }
+  };
+
+  const handleCreateModule = (e) => {
+    //get points in module 
+    const modulePoints = [];
+    for (let i = 0; i < path.points.length; i++) {
+      var point = path.points[i];
+      modulePoints.push(point);
+    }
+    //get name
+    const moduleName = path.name;
+    setModules(prev => [...prev, {
+      name: moduleName,
+      path: {
+        name: moduleName,
+        startHeading: 180,
+        endHeading: 180,
+        headingControlType: "constant",
+        getPathPoints: () => modulePoints
+        }
+    }]);
+  };
+
   return (
     <div className="Path-input">
-      <input 
-        type="text" 
-        value={path.name} 
+      <input
+        type="text"
+        value={path.name}
         onChange={(e) => {
           setPaths(prev => {
             const updated = [...prev];
@@ -204,30 +227,30 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
           });
         }}
       />
-      
+
       {path.points.map((point, pointIndex) => (
-        <PathPointInputField 
-          key={pointIndex} 
-          point={point} 
-          setPaths={setPaths} 
-          pathIndex={index} 
-          pointIndex={pointIndex} 
+        <PathPointInputField
+          key={pointIndex}
+          point={point}
+          setPaths={setPaths}
+          pathIndex={index}
+          pointIndex={pointIndex}
           setRobot={setRobot}
           paths={paths}
         />
       ))}
-      
+
       <div className="point-controls">
         <button onClick={handleAddPoint}>
           Add Point
         </button>
-        <button 
-          onClick={handleRemovePoint} 
+        <button
+          onClick={handleRemovePoint}
           disabled={path.points.length <= 1}
         >
           Remove Point
         </button>
-        <button 
+        <button
           onClick={() => {
             setPaths(prev => {
               const updated = [...prev];
@@ -246,8 +269,8 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
               const updated = [...prev];
               const newPath = {
                 name: `Path ${updated.length + 1}`,
-                points: [{x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y}, {x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300)}],
-                pathpoints: [{x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y}, {x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300)}],
+                points: [{ x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y }, { x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300) }],
+                pathpoints: [{ x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y }, { x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300) }],
                 color: getPredictableColor(pathsTotal)
               };
               updated.splice(index + 1, 0, newPath);
@@ -256,6 +279,11 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
           }}
         >
           Add Path Below
+        </button>
+        <button
+          onClick={() => handleCreateModule()}
+        >
+          Create Module
         </button>
         <button
           className={`generate-btn ${isLoading ? 'loading' : ''}`}
@@ -276,42 +304,42 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
 function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot, paths }) {
   return (
     <div className="Path-point-input">
-      <span style={{fontWeight: 'bold'}}>P{pointIndex + 1}</span>
-      <input 
-        type="number" 
+      <span style={{ fontWeight: 'bold' }}>P{pointIndex + 1}</span>
+      <input
+        type="number"
         className="Path-point-input-number"
-        placeholder="X (mm)" 
-        value={point.x || 0} 
+        placeholder="X (mm)"
+        value={point.x || 0}
         onChange={(e) => {
           const newX = parseFloat(e.target.value);
           if (!isNaN(newX)) {
             setPaths(prev => {
               const updated = [...prev];
               updated[pathIndex].points[pointIndex].x = newX;
-                const newPathPoints = [];
-                for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
-                    const p1 = updated[pathIndex].points[i];
-                    const p2 = updated[pathIndex].points[i+1];
+              const newPathPoints = [];
+              for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
+                const p1 = updated[pathIndex].points[i];
+                const p2 = updated[pathIndex].points[i + 1];
 
-                    // Simple 2-point linear path for each segment
-                    newPathPoints.push({ x: p1.x, y: p1.y });
-                    newPathPoints.push({ x: p2.x, y: p2.y });
-                }
-                updated[pathIndex].pathpoints = newPathPoints;
+                // Simple 2-point linear path for each segment
+                newPathPoints.push({ x: p1.x, y: p1.y });
+                newPathPoints.push({ x: p2.x, y: p2.y });
+              }
+              updated[pathIndex].pathpoints = newPathPoints;
               return updated;
             });
             // Update robot position if this is the first point
             if (pointIndex === 0) {
-              setRobot(prev => ({...prev, x: newX}));
+              setRobot(prev => ({ ...prev, x: newX }));
             }
           }
-        }} 
+        }}
       />
-      <input 
-        type="number" 
+      <input
+        type="number"
         className="Path-point-input-number"
-        placeholder="Y (mm)" 
-        value={point.y || 0} 
+        placeholder="Y (mm)"
+        value={point.y || 0}
         onChange={(e) => {
           const newY = parseFloat(e.target.value);
           if (!isNaN(newY)) {
@@ -319,30 +347,30 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
               const updated = [...prev];
               updated[pathIndex].points[pointIndex].y = newY;
               const newPathPoints = [];
-                for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
-                    const p1 = updated[pathIndex].points[i];
-                    const p2 = updated[pathIndex].points[i+1];
+              for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
+                const p1 = updated[pathIndex].points[i];
+                const p2 = updated[pathIndex].points[i + 1];
 
-                    // Simple 2-point linear path for each segment
-                    newPathPoints.push({ x: p1.x, y: p1.y });
-                    newPathPoints.push({ x: p2.x, y: p2.y });
-                }
-                updated[pathIndex].pathpoints = newPathPoints;
+                // Simple 2-point linear path for each segment
+                newPathPoints.push({ x: p1.x, y: p1.y });
+                newPathPoints.push({ x: p2.x, y: p2.y });
+              }
+              updated[pathIndex].pathpoints = newPathPoints;
               return updated;
             });
             // Update robot position if this is the first point
             if (pointIndex === 0) {
-              setRobot(prev => ({...prev, y: newY}));
+              setRobot(prev => ({ ...prev, y: newY }));
             }
 
           }
-        }} 
+        }}
       />
-      <input 
-        type="number" 
+      <input
+        type="number"
         className="Path-point-input-number"
-        placeholder="H (degrees)" 
-        value={point.h || 0} 
+        placeholder="H (degrees)"
+        value={point.h || 0}
         onChange={(e) => {
           const newH = parseFloat(e.target.value);
           if (!isNaN(newH)) {
@@ -353,32 +381,32 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             });
             // Update robot position if this is the first point
             if (pointIndex === 0) {
-              setRobot(prev => ({...prev, heading: newH}));
+              setRobot(prev => ({ ...prev, heading: newH }));
             }
           }
-        }} 
+        }}
       />
       <label className="toggle-label">
-        <input type="checkbox" checked={point.stop} 
-            onChange={(e) =>             
-                setPaths(prev => {
-                const updated = [...prev];
-                updated[pathIndex].points[pointIndex].stop = e.target.checked;
-                return updated;
-                })
-            } 
+        <input type="checkbox" checked={point.stop}
+          onChange={(e) =>
+            setPaths(prev => {
+              const updated = [...prev];
+              updated[pathIndex].points[pointIndex].stop = e.target.checked;
+              return updated;
+            })
+          }
         /> Stop
       </label>
-      
+
       <label className="toggle-label">
-        <input type="checkbox" checked={point.constrainHeading} 
-            onChange={(e) =>             
-                setPaths(prev => {
-                const updated = [...prev];
-                updated[pathIndex].points[pointIndex].constrainHeading = e.target.checked;
-                return updated;
-                })
-            } 
+        <input type="checkbox" checked={point.constrainHeading}
+          onChange={(e) =>
+            setPaths(prev => {
+              const updated = [...prev];
+              updated[pathIndex].points[pointIndex].constrainHeading = e.target.checked;
+              return updated;
+            })
+          }
         /> Lock H
       </label>
       <button
@@ -388,12 +416,12 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             updated[pathIndex].points.splice(pointIndex, 1);
             const newPathPoints = [];
             for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
-                const p1 = updated[pathIndex].points[i];
-                const p2 = updated[pathIndex].points[i+1];
+              const p1 = updated[pathIndex].points[i];
+              const p2 = updated[pathIndex].points[i + 1];
 
-                // Simple 2-point linear path for each segment
-                newPathPoints.push({ x: p1.x, y: p1.y });
-                newPathPoints.push({ x: p2.x, y: p2.y });
+              // Simple 2-point linear path for each segment
+              newPathPoints.push({ x: p1.x, y: p1.y });
+              newPathPoints.push({ x: p2.x, y: p2.y });
             }
             updated[pathIndex].pathpoints = newPathPoints;
 
@@ -408,16 +436,16 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
         onClick={() => {
           setPaths(prev => {
             const updated = [...prev];
-            const newPoint = {x: point.x + (Math.random() * 600 - 300), y: point.y + (Math.random() * 600 - 300)}; // Add random -600-600mm offset
+            const newPoint = { x: point.x + (Math.random() * 600 - 300), y: point.y + (Math.random() * 600 - 300) }; // Add random -600-600mm offset
             updated[pathIndex].points.splice(pointIndex + 1, 0, newPoint);
             const newPathPoints = [];
             for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
-                const p1 = updated[pathIndex].points[i];
-                const p2 = updated[pathIndex].points[i+1];
+              const p1 = updated[pathIndex].points[i];
+              const p2 = updated[pathIndex].points[i + 1];
 
-                // Simple 2-point linear path for each segment
-                newPathPoints.push({ x: p1.x, y: p1.y });
-                newPathPoints.push({ x: p2.x, y: p2.y });
+              // Simple 2-point linear path for each segment
+              newPathPoints.push({ x: p1.x, y: p1.y });
+              newPathPoints.push({ x: p2.x, y: p2.y });
             }
             updated[pathIndex].pathpoints = newPathPoints;
 

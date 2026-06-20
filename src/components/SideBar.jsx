@@ -32,7 +32,7 @@ function SideBar({ robot, setRobot, paths, setPaths, animationState, setAnimatio
       <button onClick={() => fileInputRef.current?.click()}>Load Auto File</button>
 
       <AttributesInputField robot={robot} setRobot={setRobot}/>
-      <PathManager paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal}/>
+      <PathManager paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} modules={modules} setModules={setModules}/>
       <ObstacleManager obstacles={obstacles} setObstacles={setObstacles} obstaclesExpanded={obstaclesExpanded} setObstaclesExpanded={setObstaclesExpanded} />
       <ModuleManager modules={modules} setModules={setModules} modulesExpanded={modulesExpanded} setModulesExpanded={setModulesExpanded} addedModules={addedModules} setAddedModules={setAddedModules} paths={paths} setPaths={setPaths} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} obstacles={obstacles} robot={robot} />
       <AnimationControls animationState={animationState} setAnimationState={setAnimationState} paths={paths} robot={robot} setRobot={setRobot} />

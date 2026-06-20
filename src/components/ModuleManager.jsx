@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import { getPredictableColor } from '../utils/colors';
 
