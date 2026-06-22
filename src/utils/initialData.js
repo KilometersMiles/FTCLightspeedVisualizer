@@ -4,6 +4,11 @@ import { goToClosestShootingPosition, goToClosestParkingPosition } from "./geome
 export const ROBOT_ATTRIBUTES = [
   {name: "Width", defaultValue: 15},
   {name: "Length", defaultValue: 15},
+  {name: "Mass", defaultValue: 15},
+  {name: "Moment of Inertia", defaultValue: .9},
+  {name: "Radius", defaultValue: .18},
+  {name: "Wheel radius", defaultValue: .048},
+  {name: "Efficiency", defaultValue: .7},
   {name: "Speed", defaultValue: 1000}, // This is in mm/s
   {name: "Acceleration", defaultValue: 1000}, // This is in mm/s^2
   {name: "Buffer", defaultValue: 2} // This is for the path generation.

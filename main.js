@@ -10,22 +10,16 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      // This connects your React code to your Python logic safely
       preload: path.join(__dirname, 'preload.js'), 
     },
   });
 
-  // Load the local dev server URL
   win.loadURL('http://localhost:3000'); 
-
-  // Optional: Open DevTools automatically to see errors
-  //win.webContents.openDevTools();
 }
 
 ipcMain.handle('run-optimizer', async (event, { waypoints, obstacles }) => {
   return new Promise((resolve, reject) => {
-    // 1. Spawn Python. Use '-u' for unbuffered output so we get data in real-time.
-    const pythonProcess = spawn('python', ['python/optimizer.py']); // No args here
+    const pythonProcess = spawn('python', ['python/optim.py']);
 
     // Write the data to the process directly
     pythonProcess.stdin.write(JSON.stringify({ waypoints, obstacles }));

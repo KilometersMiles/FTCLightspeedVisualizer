@@ -1,3 +1,4 @@
+# USES KINEMATIC MODEL - Probably inaccurate assumtions but pretty good
 import casadi as ca
 import numpy as np
 import sys
