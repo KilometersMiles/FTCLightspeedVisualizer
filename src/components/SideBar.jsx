@@ -4,7 +4,7 @@ import PathManager from './PathManager';
 import ObstacleManager from './ObstacleManager';
 import ModuleManager from './ModuleManager';
 import AnimationControls from './AnimationControls';
-import { saveFTCAutoFile, loadFTCAutoFile } from '../utils/fileHelpers';
+import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileHelpers';
 
 function SideBar({ robot, setRobot, paths, setPaths, animationState, setAnimationState, obstacles, setObstacles, obstaclesExpanded, setObstaclesExpanded, modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, abortControllers, pathsTotal, setPathsTotal }) {
   const fileInputRef = useRef();
@@ -30,6 +30,11 @@ function SideBar({ robot, setRobot, paths, setPaths, animationState, setAnimatio
       />
 
       <button onClick={() => fileInputRef.current?.click()}>Load Auto File</button>
+
+      <button onClick={() => exportPathData(paths)}>
+        Export Paths for Pathing
+      </button>
+
 
       <AttributesInputField robot={robot} setRobot={setRobot}/>
       <PathManager paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} modules={modules} setModules={setModules}/>

@@ -55,3 +55,53 @@ export function loadFTCAutoFile(file, { setRobot, setPaths, setObstacles }) {
 
   reader.readAsText(file);
 }
+
+export function exportPathData(paths) {
+  try {
+    for (const path of paths) {
+      //make sure path is optimized
+      if ((path.points.length * 2) >= path.pathpoints.length) {
+        continue;
+      }
+      var data = [];
+      for (const point of path.pathpoints) {
+        const t = point.t;
+        const x = point.x / 1000;// to meters
+        const y = point.y / 1000;
+        const theta = point.theta;
+        const vx = point.v_bx;
+        const vy = point.v_by;
+        const omega = point.omega;
+
+        const dataPoint = {
+          "t": t,
+          "x": x,
+          "y": y,
+          "theta": theta,
+          "vx": vx,
+          "vy": vy,
+          "omega": omega
+        }
+        data.push(dataPoint);
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${path.name || 'auto'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log("Exported " + path.name + "successfully");
+
+    };
+  } catch (err) {
+    console.error("Failed to export path data file:", err)
+  }
+}

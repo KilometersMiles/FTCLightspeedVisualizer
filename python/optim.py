@@ -151,10 +151,10 @@ def findTrajectory (waypoints, obstacles, robot):
         if 0 < i < numSegments:
             opti.subject_to(Xsegments[i-1][:, -1] == Xsegments[i][:, 0])
     
-    # re-enable for no printing when done testing
-    # opts = {"ipopt.print_level": 0, "print_time": 0, "ipopt.sb": "yes"}
-    # opti.solver("ipopt", opts)
-    opti.solver('ipopt', {"print_time": True}, {"print_level": 5})
+    opts = {"ipopt.print_level": 0, "print_time": 0, "ipopt.sb": "yes"}
+    opti.solver("ipopt", opts)
+    # Use when testing for print info
+    # opti.solver('ipopt', {"print_time": True}, {"print_level": 5})
 
     try:
         sol = opti.solve()
@@ -290,9 +290,14 @@ if __name__ == "__main__":
         output_points = []
         for point in result_path:
             output_points.append({
+                't': point['t'],
                 'x': point['x'] * 1000.0,
                 'y': point['y'] * 1000.0,
                 'h': float(np.degrees(point['theta'])),
+                'theta': point['theta'],
+                'omega': point['omega'],
+                'v_bx': point['vx'],
+                'v_by': point['vy'],
                 'v': float(np.sqrt(point['vx']**2 + point['vy']**2))
             })
         print(json.dumps(output_points))

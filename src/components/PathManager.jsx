@@ -182,6 +182,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
         return updated;
       });
       console.log("Optimization completed for:", path.name);
+      console.log(path);
 
     } catch (error) {
       if (error.name === 'AbortError') {
