@@ -7,7 +7,7 @@ import json
 import matplotlib.pyplot as plt
 
 class Drivetrain:
-    def __init__(self, name, mass, moi, wheel, length, width, mu, motor):
+    def __init__(self, name, mass, moi, wheel, length, width, mu, motor, maxForwardSpeed, maxStrafeSpeed, maxAngularSpeed):
         self.name = name
         self.mass = mass
         self.moi = moi
@@ -17,6 +17,12 @@ class Drivetrain:
         self.radius = np.sqrt((width/2) ** 2 + (length/2) ** 2)
         self.mu = mu
         self.motor = motor
+        self.maxForwardSpeed = maxForwardSpeed
+        self.maxStrafeSpeed = maxStrafeSpeed
+        self.maxAngularSpeed = maxAngularSpeed
+        self.Bx = ((4*motor.torqueConstant)/(np.sqrt(2)*wheel*motor.resistance*maxForwardSpeed)) * (motor.Vmax - (maxForwardSpeed/(wheel * motor.radPerVolt)))
+        self.By = ((4*motor.torqueConstant)/(np.sqrt(2)*wheel*motor.resistance*maxStrafeSpeed)) * (motor.Vmax - (maxStrafeSpeed/(wheel * motor.radPerVolt)))
+        self.Bz = ((4*motor.torqueConstant*((length/2)+(width/2)))/(np.sqrt(2)*wheel*motor.resistance*maxAngularSpeed)) * (motor.Vmax - ((maxAngularSpeed*((length/2)+(width/2)))/(wheel * motor.radPerVolt)))
 
 class Motor:
     def __init__(self, Vmax, torqueConstant, radPerVolt, resistance):
@@ -43,7 +49,9 @@ def findTrajectory (waypoints, obstacles, robot):
     Kv = robot.motor.radPerVolt
     R = robot.motor.resistance
 
-    maxTorque = 5 #Nm
+    Bx = robot.Bx
+    By = robot.By
+    Bz = robot.Bz
 
     Tsegments = [] 
     Xsegments = [] #State [x, vx, y, vy, θ, w]. x and y pos in global frame. vx vy are in body frame
@@ -60,10 +68,6 @@ def findTrajectory (waypoints, obstacles, robot):
     # uses same dynamic model as shown in https://stumejournals.com/journals/tm/2025/2/51.full.pdf
     # does have some assumptions, but are reasonable
 
-    #move to robot class later
-    Bx = 1
-    By = .75
-    Bz = 1
 
     def getDynamicModel(x, u):
         theta = x[4]
@@ -160,7 +164,7 @@ def findTrajectory (waypoints, obstacles, robot):
             opti.subject_to(opti.bounded(-maxWheelForce, f2, maxWheelForce))
             opti.subject_to(opti.bounded(-maxWheelForce, f3, maxWheelForce))
             opti.subject_to(opti.bounded(-maxWheelForce, f4, maxWheelForce))  
-        opti.subject_to(opti.bounded(-robot.motor.Vmax, U, robot.motor.Vmax))
+        opti.subject_to(opti.bounded(-Vmax, U, Vmax))
 
     for i in range(numSegments + 1):        
         wp = waypoints[i]
@@ -316,7 +320,7 @@ if __name__ == "__main__":
         ]
 
         gobilda435 = Motor(12, .1413, 3.795, 1.504)
-        robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435)
+        robot = Drivetrain("Kevin", 15, .9, .052, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
 
         result_path, total_t = findTrajectory(formatted_waypoints, obstacles, robot)
 
@@ -341,19 +345,22 @@ if __name__ == "__main__":
         print(f"Python Error: {str(e)}", file=sys.stderr)
         sys.exit(2)
 
-    # waypoints = [
-    #     {'x': -0.45, 'y': 0.45, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
-    #     {'x': 0.9, 'y': 0.5, 'theta': -np.pi/2, 'stop': False,  'constrain_theta': True},
-    #     {'x': 0.9, 'y': 0.9, 'theta': -np.pi/2, 'stop': False,  'constrain_theta': True},
-    #     {'x': 0.9, 'y': 1.6, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
-    #     # {'x': -.45, 'y': .45, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
-    # ]
-    
-    
-    # gobilda435 = Motor(12, .1413, 3.795, 1.504)
-    
-    # robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435)
-    
-    # path, total_t = findTrajectory(waypoints=waypoints, obstacles=obstacles, robot=robot)
-    # visualize_and_save(path, total_t)
+        # waypoints = [
+        #     {'x': 0, 'y': 0, 'theta': 0, 'stop': True,  'constrain_theta': True},
+        #     {'x': 0, 'y': 10, 'theta': 0, 'stop': True,  'constrain_theta': True},
+
+        #     # {'x': -0.45, 'y': 0.45, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
+        #     # {'x': 0.9, 'y': 0.5, 'theta': -np.pi/2, 'stop': False,  'constrain_theta': True},
+        #     # {'x': 0.9, 'y': 0.9, 'theta': -np.pi/2, 'stop': False,  'constrain_theta': True},
+        #     # {'x': 0.9, 'y': 1.6, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
+        #     # {'x': -.45, 'y': .45, 'theta': -np.pi/2, 'stop': True,  'constrain_theta': True},
+        # ]
+        
+        
+        # gobilda435 = Motor(12, .1413, 3.795, 1.504)
+        
+        # robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
+        
+        # path, total_t = findTrajectory(waypoints=waypoints, obstacles=obstacles, robot=robot)
+        # visualize_and_save(path, total_t)
     
