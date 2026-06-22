@@ -15,7 +15,6 @@ function generateOptimalPath(path, obstacles, robot) {
   //track time per step
   const startTime = performance.now();
   //console.log("Starting optimal path generation...");
-  //First, we need to define the coordinate grid
   const gridSize = 10; // Size of each grid cell in mm
   const gridWidth = Math.ceil(3580 / gridSize);
   const gridHeight = Math.ceil(3580 / gridSize);
@@ -27,17 +26,14 @@ function generateOptimalPath(path, obstacles, robot) {
   obstacles.forEach(obstacle => {
     if (obstacle.points.length < 3) return;
     
-    // Get bounding box of obstacle
     const minX = Math.min(...obstacle.points.map(p => p.x));
     const maxX = Math.max(...obstacle.points.map(p => p.x));
     const minY = Math.min(...obstacle.points.map(p => p.y));
     const maxY = Math.max(...obstacle.points.map(p => p.y));
     
-    // Convert to grid coordinates
     const gridMin = worldToGrid(minX, minY);
     const gridMax = worldToGrid(maxX, maxY);
     
-    // Mark cells in bounding box
     for (let x = gridMin.x; x <= gridMax.x; x++) {
       for (let y = gridMin.y; y <= gridMax.y; y++) {
         const worldPos = {
@@ -56,12 +52,9 @@ function generateOptimalPath(path, obstacles, robot) {
   //Time update
   const obstacleTime = performance.now();
   //console.log(`Obstacle marking took ${obstacleTime - startTime} ms`);
-  //Then, mark any node within the buffer space as non-walkable (less than buffer distance from any non-walkable node)
-  // Create distance field using a brushfire algorithm
   const bufferCells = Math.ceil((Math.sqrt((robot.width/2)**2 + (robot.length/2)**2) + robot.buffer) / gridSize);
   const distanceField = Array.from({length: gridHeight}, () => Array(gridWidth).fill(Infinity));
 
-  // Initialize queue with obstacle cells
   const queue = [];
   for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
@@ -72,7 +65,6 @@ function generateOptimalPath(path, obstacles, robot) {
       }
   }
 
-  // 4-directional neighbors for brushfire spread
   const directions = [
       {dx: 1, dy: 0},
       {dx: -1, dy: 0}, 
@@ -80,7 +72,6 @@ function generateOptimalPath(path, obstacles, robot) {
       {dx: 0, dy: -1}
   ];
 
-  // Process queue
   while (queue.length > 0) {
       const current = queue.shift();
       
@@ -100,7 +91,6 @@ function generateOptimalPath(path, obstacles, robot) {
       }
   }
 
-  // 3. Mark buffer zones
   for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
           if (distanceField[y][x] <= bufferCells && grid[y][x] !== -1) {
@@ -108,10 +98,8 @@ function generateOptimalPath(path, obstacles, robot) {
           }
       }
   }
-  //Time update
   const bufferTime = performance.now();
  // console.log(`Buffer marking took ${bufferTime - obstacleTime} ms`);
-  // Theta* implementation with Priority Queue
   const startNode = {
       x: Math.floor((path.points[0].x + 1790) / gridSize),
       y: Math.floor((path.points[0].y + 1790) / gridSize)
@@ -121,26 +109,21 @@ function generateOptimalPath(path, obstacles, robot) {
       y: Math.floor((path.points[1].y + 1790) / gridSize)
   };
 
-  // Theta* algorithm implementation
   const openSet = new PriorityQueue();
   const closedSet = new Set();
   const cameFrom = {};
   const gScore = {};
   const fScore = {};
 
-  // Euclidean distance heuristic
   const heuristic = (a, b) => Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 
-  // Initialize scores
   gScore[`${startNode.x},${startNode.y}`] = 0;
   fScore[`${startNode.x},${startNode.y}`] = heuristic(startNode, endNode);
   openSet.enqueue(startNode, fScore[`${startNode.x},${startNode.y}`]);
 
   while (!openSet.isEmpty()) {
-      // Get node with lowest fScore (O(1) with priority queue)
       const currentNode = openSet.dequeue();
 
-      // Path found
       if (currentNode.x === endNode.x && currentNode.y === endNode.y) {
           let newPath = [];
           let node = currentNode;
@@ -185,14 +168,11 @@ function generateOptimalPath(path, obstacles, robot) {
 
       closedSet.add(`${currentNode.x},${currentNode.y}`);
 
-      // Generate neighbors (8-directional)
       const neighbors = [
-          // Cardinal directions
           {x: currentNode.x + 1, y: currentNode.y},
           {x: currentNode.x - 1, y: currentNode.y},
           {x: currentNode.x, y: currentNode.y + 1},
           {x: currentNode.x, y: currentNode.y - 1},
-          // Diagonal directions
           {x: currentNode.x + 1, y: currentNode.y + 1},
           {x: currentNode.x - 1, y: currentNode.y + 1},
           {x: currentNode.x + 1, y: currentNode.y - 1},
@@ -206,12 +186,10 @@ function generateOptimalPath(path, obstacles, robot) {
           if (grid[neighbor.y][neighbor.x] === -1 || 
               closedSet.has(`${neighbor.x},${neighbor.y}`)) continue;
 
-          // Theta* modification: Try to connect to grandparent
           let newGScore;
           if (cameFrom[`${currentNode.x},${currentNode.y}`]) {
               const grandparent = cameFrom[`${currentNode.x},${currentNode.y}`];
               if (hasLineOfSight(grid, grandparent, neighbor)) {
-                  // Euclidean distance if line-of-sight exists
                   newGScore = gScore[`${grandparent.x},${grandparent.y}`] + 
                             heuristic(grandparent, neighbor);
                   
@@ -229,7 +207,6 @@ function generateOptimalPath(path, obstacles, robot) {
               }
           }
 
-          // Standard A* update (grid-based distance)
           const tentativeGScore = gScore[`${currentNode.x},${currentNode.y}`] + 
                                 heuristic(currentNode, neighbor);
           

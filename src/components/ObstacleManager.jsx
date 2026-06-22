@@ -59,22 +59,20 @@ function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstac
   );
 }
 function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setObstaclesExpanded }) {
-  //handle adding a new point to the obstacle
   const handleAddPoint = () => {
     setObstacles(prev => {
       const updated = [...prev];
       updated[index].points.push({
-        x: Math.random() * 600, // Randomly generate new point
-        y: Math.random() * 600
+        x: Math.random() * 1200, // Randomly generate added points
+        y: Math.random() * 1200
       });
       return updated;
     });
   };
-  //handle removing the last point from the obstacle
   const handleRemovePoint = () => {
     setObstacles(prev => {
       const updated = [...prev];
-      if (updated[index].points.length > 3) { // Keep at least 3
+      if (updated[index].points.length > 3) { // 3 points in a triangle
         updated[index].points.pop();
       }
       return updated;

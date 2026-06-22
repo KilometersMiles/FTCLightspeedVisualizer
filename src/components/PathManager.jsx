@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
+import { Plus, Minus, Trash2, Box, Zap, Route } from 'lucide-react';
 import { getPredictableColor } from '../utils/colors';
 import { ROBOT_ATTRIBUTES } from '../utils/initialData';
+import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import LightningButton from './LightningButton';
 
 function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
@@ -30,7 +31,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       }]);
 
     } else {
-      // If no paths exist, start with a default point at (0, 0)
+      // default point at (0, 0)
       setPaths(prev => [...prev, {
         name: `Path ${prev.length + 1}`,
         points: [{ x: 0, y: 0 }, newPoint],
@@ -38,7 +39,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
         color: getPredictableColor(pathsTotal)
       }]);
     }
-    // Reset animation state when adding new path
+    // Reset animation state when adding new path so things don't go crazy
     setAnimationState(prev => ({
       ...prev,
       isPlaying: false,
@@ -68,7 +69,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       <h5>Paths</h5>
 
       {paths.map((path, index) => (
-        <div key={index} className="path-container">
+        <div key={index} className="path-container" style={{ border: `1px solid ${path.color}` }}>
           <PathInput
             path={path}
             paths={paths}
@@ -103,16 +104,15 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
 }
 
 function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
-  const selectOption = useRef(null); // Initialize with null
+  const selectOption = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
     e.stopPropagation(); // Prevent event bubbling
     e.preventDefault(); // Prevent default behavior
-    //new point should be randomly generated within 600mm of previous point
     const lastPoint = path.points[path.points.length - 1];
     const newPoint = {
-      x: lastPoint.x + (Math.random() * 600 - 300), //
-      y: lastPoint.y + (Math.random() * 600 - 300), // Randomly within 600mm of last point
+      x: lastPoint.x + (Math.random() * 1200 - 300), //
+      y: lastPoint.y + (Math.random() * 1200 - 300), // 
       h: lastPoint.h || 0,
       stop: false,
       constrainHeading: true
@@ -157,7 +157,6 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
       return updated;
     });
   };
-  // Inside PathInput component
   const handleGeneratePath = async () => {
     if (isLoading) {
       return; // Prevent multiple clicks
@@ -168,18 +167,16 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
     try {
       console.log("Starting optimization for:", path.name);
 
-      // Call the Electron bridge
       const optimizedPoints = await window.electronAPI.runOptimizer({
         waypoints: path.points,
         obstacles: obstacles
       }, controller.signal);
 
-      // Update the state with the high-resolution path
       setPaths(prev => {
         const updated = [...prev];
         updated[index] = {
           ...updated[index],
-          pathpoints: optimizedPoints // This replaces the straight lines with the curve
+          pathpoints: optimizedPoints // Pathpoints is the curvy points
         };
         return updated;
       });
@@ -198,14 +195,33 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
     }
   };
 
+  const handleRunThetaStar = () => {
+    if (path.points.length === 2) {
+      const newPath = generateOptimalPath(path, obstacles, robot);
+      setPaths(prev => {
+        const updated = [...prev];
+        updated[index].points = newPath.points;
+        const newPathPoints = [];
+        for (let i = 0; i < updated[index].points.length - 1; i++) {
+          const p1 = updated[index].points[i];
+          const p2 = updated[index].points[i + 1];
+
+          // Simple 2-point linear path for each segment
+          newPathPoints.push({ x: p1.x, y: p1.y });
+          newPathPoints.push({ x: p2.x, y: p2.y });
+        }
+        updated[index].pathpoints = newPathPoints;
+        return updated;
+      });
+    }
+  };
+
   const handleCreateModule = (e) => {
-    //get points in module 
     const modulePoints = [];
     for (let i = 0; i < path.points.length; i++) {
       var point = path.points[i];
       modulePoints.push(point);
     }
-    //get name
     const moduleName = path.name;
     setModules(prev => [...prev, {
       name: moduleName,
@@ -220,7 +236,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
   };
 
   return (
-    <div className="Path-input">
+    <div>
       <input
         type="text"
         value={path.name}
@@ -246,6 +262,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
       ))}
 
       <div className="point-controls">
+        {/*These buttons are kinda repetative, idk whether or not to keep them */}
         {/* <button onClick={handleAddPoint} title='Add Point to End'>
           <Plus size={14} />
         </button>
@@ -295,6 +312,13 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
         >
           <Box size={14} />
         </button>
+        <button
+          onClick={() => handleRunThetaStar()}
+          title='Find best points'
+          disabled={path.points.length != 2}
+        >
+          <Route size={14} />
+        </button>
         <LightningButton
           className={`generate-btn ${isLoading ? 'loading' : ''}`}
           onClick={() => handleGeneratePath(index)}
@@ -304,7 +328,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
           {!isLoading ? (
             <Zap size={14} />
           ) : (
-            <div style={{display: 'none'}}/>
+            <div style={{ display: 'none' }} />
           )}
         </LightningButton>
       </div>
@@ -333,14 +357,14 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
                   const p1 = updated[pathIndex].points[i];
                   const p2 = updated[pathIndex].points[i + 1];
 
-                  // Simple 2-point linear path for each segment
+                  // adds two points so drawing easier
                   newPathPoints.push({ x: p1.x, y: p1.y });
                   newPathPoints.push({ x: p2.x, y: p2.y });
                 }
                 updated[pathIndex].pathpoints = newPathPoints;
                 return updated;
               });
-              // Update robot position if this is the first point
+              // only robot position if this is the first point
               if (pointIndex === 0) {
                 setRobot(prev => ({ ...prev, x: newX }));
               }

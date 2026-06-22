@@ -105,7 +105,8 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
   const handleAddModule = (newModule) => {
     var moduleID = Math.random().toString(36).substr(2, 9);
 
-    // Use getPathPoints if present, otherwise fallback to static points
+    // static points can be saved in module
+    // path generation on modules requires getPathPoints but can't be saved
     let modulePathPoints = [];
     if (typeof newModule.path.getPathPoints === "function") {
       modulePathPoints = newModule.path.getPathPoints({ paths, robot, obstacles });
@@ -149,8 +150,6 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
 
   const handleRemoveModule = (index) => {
     setAddedModules(prev => prev.filter((module, i) => i !== index));
-    //remove the path associated with the module
-    console.log("Removing module with ID:", module.moduleID);
     setPaths(prev => prev.filter(path => path.moduleID !== module.moduleID));
   };
 
@@ -159,7 +158,6 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
 
     if (userConfirmed) {
       setModules(prev => prev.filter(item => item !== module));
-      //save new modules
       if (window.electronAPI) {
         window.electronAPI.saveData('modules', modules);
       }

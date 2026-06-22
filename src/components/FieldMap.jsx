@@ -129,55 +129,42 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
   };
 
   const drawRobot = (ctx, canvas, robot) => {
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Calculate scaling (3580mm field to canvas pixels)
     const scale = canvas.width / 3580;
-    
-    // Save context, translate/rotate, then draw
     ctx.save();
-    // Move origin to center (now (0,0) is center of canvas)
     ctx.translate(canvas.width/2, canvas.height/2);
-    
-    // Flip Y axis so positive is up
     ctx.scale(1, -1);
-    
-    //get robot dimensions in scaled pixels
+  
     const robotWidth = robot.width * scale; // Convert to pixels
     const robotLength = robot.length * scale; // Convert to pixels
 
-    // Apply robot position (now in center-relative coords)
     ctx.translate(robot.x * scale, robot.y * scale);
-    ctx.rotate((robot.heading * Math.PI / 180) - Math.PI/2); // Rotate to heading, minus 90 degrees to align with coord system
+    ctx.rotate((robot.heading * Math.PI / 180) - Math.PI/2); 
     
-    // Draw robot body (centered)
-    ctx.fillStyle = '#3a86ff'; // Nice blue color
-    ctx.strokeStyle = '#1a4b9b'; // Darker blue for border
+    ctx.fillStyle = '#3a86ff';
+    ctx.strokeStyle = '#1a4b9b'; 
     ctx.lineWidth = 2;
 
-    // Main robot body
     ctx.beginPath();
     ctx.roundRect(
       -robotWidth/2,
       -robotLength/2,
       robotWidth,
       robotLength,
-      [robotWidth * 0.2] // Rounded corners
+      [robotWidth * 0.2] 
     );
     ctx.fill();
     ctx.stroke();
     
-    // Draw wheels (4 wheels - one on each corner)
     const wheelWidth = robotWidth * 0.15;
     const wheelLength = robotLength * 0.25;
-    const wheelOffset = 0.75; // How close to edge wheels are lengthwise
-    const wheelWidthOffset = 0.85; // How close to edge wheels are widthwise
+    const wheelOffset = 0.75; 
+    const wheelWidthOffset = 0.85;
     
     ctx.fillStyle = '#333333';
     ctx.strokeStyle = '#000000';
     
-    // Front left wheel
+    // Front left 
     ctx.fillRect(
       -robotWidth/2 * wheelWidthOffset- wheelWidth/2,
       robotLength/2 * wheelOffset - wheelLength/2,
@@ -185,7 +172,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       wheelLength
     );
     
-    // Front right wheel
+    // Front right 
     ctx.fillRect(
       robotWidth/2 * wheelWidthOffset - wheelWidth/2,
       robotLength/2 * wheelOffset - wheelLength/2,
@@ -193,7 +180,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       wheelLength
     );
     
-    // Rear left wheel
+    // Rear left 
     ctx.fillRect(
       -robotWidth/2 * wheelWidthOffset - wheelWidth/2,
       -robotLength/2 * wheelOffset - wheelLength/2,
@@ -201,7 +188,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       wheelLength
     );
     
-    // Rear right wheel
+    // Rear right 
     ctx.fillRect(
       robotWidth/2 * wheelWidthOffset - wheelWidth/2,
       -robotLength/2 * wheelOffset - wheelLength/2,
@@ -209,13 +196,11 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       wheelLength
     );
     
-    // Draw front indicator
     ctx.fillStyle = '#ff0000';
     ctx.beginPath();
     ctx.arc(0, robotLength/2 * 0.8, robotWidth * 0.1, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw center point (for orientation debugging)
     ctx.fillStyle = '#00ff00';
     ctx.beginPath();
     ctx.arc(0, 0, 3, 0, Math.PI * 2);
@@ -287,14 +272,12 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
         return updated;
       });
       
-      // Redraw
       const ctx = canvasRef.current.getContext('2d');
       drawRobot(ctx, canvasRef.current, robot);
       drawObstacles(ctx, canvasRef.current);
       return;
     }
 
-    // Calculate new position in mm
     const newX = -((3580/2) - (e.clientX - rect.left) / scale);
     const newY = (3580/2) - ((e.clientY - rect.top) / scale); // Flip Y
 
@@ -314,18 +297,16 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
         return updated;
     });
 
-    // Update robot if first point
     if (draggingIndex === 0) {
       setRobot(prev => ({...prev, x: newX, y: newY}));
     }
 
-    //if there's an abort controller for this path, abort optimization
+    //abort optimization on drag, cause the points changed
     const abortController = abortControllers.current[pathDraggingIndex];
     if (abortController) {
       abortController.abort();
     }
 
-    // Redraw
     const pointsCtx = pointsCanvasRef.current.getContext('2d');
     drawPoints(pointsCtx, pointsCanvasRef.current, robot);
   };
@@ -359,7 +340,6 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
         className="Points-canvas" 
         ref={pointsCanvasRef}
         onMouseDown={handleMouseDown}
-        //style={{ cursor: draggingIndex !== null ? 'grabbing' : 'pointer' }}
       />
     </div>
   );

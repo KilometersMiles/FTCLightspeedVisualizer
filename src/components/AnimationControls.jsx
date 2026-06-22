@@ -102,18 +102,16 @@ function AnimationControls({
     };
   }, []);
 
-  // Helper function to find shortest angle between two headings
   const shortestAngle = (from, to) => {
     const difference = to - from;
     return ((difference + 180) % 360) - 180;
   };
 
-  // get state at timestamp
   const getStateAtTime = useCallback((timeline, time) => {
     if (timeline.length === 0) return null;
     if (time <= 0) return timeline[0];
     if (time >= timeline[timeline.length - 1].globalTime) return timeline[timeline.length - 1];
-    // binary search for the correct segment
+    // binary search
     let left = 0;
     while (left < timeline.length - 1 && timeline[left + 1].globalTime < time) {
       left++;
@@ -153,11 +151,9 @@ function AnimationControls({
       setAnimationState((prev) => {
         let nextProgress = prev.totalProgress + (deltaTime / totalTime);
 
-        // If progress exceeds full playback loop, pause animation runtime and lock tracking elements
         if (nextProgress >= 1) {
           cancelAnimationFrame(animationRef.current);
 
-          // Render final state frame explicitly
           const lastFrame = timeline[timeline.length - 1];
           if (lastFrame) {
             setRobot(r => ({ ...r, x: lastFrame.x, y: lastFrame.y, heading: lastFrame.h }));
@@ -175,7 +171,7 @@ function AnimationControls({
             x: sampledFrame.x,
             y: sampledFrame.y,
             heading: sampledFrame.h,
-            currentVelocity: sampledFrame.v // Helpful state hook extension if you display dashboard analytics
+            currentVelocity: sampledFrame.v
           }));
         }
 
@@ -192,13 +188,12 @@ function AnimationControls({
     };
   }, [animationState.isPlaying, paths, calculatePathDurations, getStateAtTime, setAnimationState, setRobot]);
 
-  // Play/pause button handler
   const togglePlayPause = () => {
     console.log(paths);
     setAnimationState((prev) => {
       const isNowPlaying = !prev.isPlaying;
       if (isNowPlaying) {
-        prevTimeRef.current = null; // Clear context timeline cache on initial mount interaction
+        prevTimeRef.current = null;
       }
       return {
         ...prev,

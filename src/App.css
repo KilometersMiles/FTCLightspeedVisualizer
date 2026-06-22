@@ -1,6 +1,3 @@
-/* ==========================================================================
-   1. Core Layout & Theme - Aluminum Falcons Premium Theme
-   ========================================================================== */
 :root {
   --bg-color: #08080c;
   --text-main: #f5f5f7;
@@ -62,9 +59,6 @@ body {
   gap: 24px;
 }
 
-/* ==========================================================================
-   2. Field Map Section - Scales Proproportionally to Window Height
-   ========================================================================== */
 .Field-map {
   position: relative;
   /* flex: 1; */
@@ -132,9 +126,7 @@ body {
   width: 100%;
   margin-top: 0; /* Override old spacing margins */
 }
-/* ==========================================================================
-   3. Sidebar Section & Section Containers (Updated Spacing)
-   ========================================================================== */
+
 .Side-bar {
   /* width: 45%; */
   height: 100%;
@@ -196,7 +188,7 @@ h5 {
 /* Enclosing Containers for Sub-modules, Paths, and Obstacles */
 .path-container, .obstacle-container, .module-container {
   background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
+  /* border: 1px solid var(--border-color); */
   padding: 16px; /* Enhanced inside breathing room */
   border-radius: 8px;
   margin-bottom: 16px; /* Added spacing between subsequent items stacked vertically */
@@ -309,9 +301,7 @@ h5 {
     transform: translateY(0);
   }
 }
-/* ==========================================================================
-   4. Strict Row Separated Input Grids (Coordinates Top, Controls Bottom)
-   ========================================================================== */
+
 .Path-point-input, .Obstacle-point-input {
   display: flex;
   flex-direction: column;
@@ -384,9 +374,6 @@ input:focus, select:focus {
   box-shadow: 0 0 8px rgba(125, 211, 252, 0.2);
 }
 
-/* ==========================================================================
-   5. Cyberpunk Checkboxes & Inline Labels
-   ========================================================================== */
 .toggle-label, .checkbox-label {
   display: inline-flex;
   flex-direction: row;
@@ -445,9 +432,6 @@ input:focus, select:focus {
   transform: scale(1);
 }
 
-/* ==========================================================================
-   6. Cyber Buttons - Dark Base, White Frame -> Bezier Glow to Blue
-   ========================================================================== */
 button {
   background: rgba(255, 255, 255, 0.01);
   color: var(--text-main);
@@ -486,9 +470,6 @@ button:disabled {
   box-shadow: none !important;
 }
 
-/* ==========================================================================
-   7. Generate Button Spinner
-   ========================================================================== */
 .generate-btn {
   position: relative;
   display: inline-flex;
@@ -526,9 +507,6 @@ button:disabled {
     transform: rotate(360deg);
   }
 }
-/* ==========================================================================
-   8. Timeline Player Controls & Scrollbars
-   ========================================================================== */
 .animation-controls {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color);
