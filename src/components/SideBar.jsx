@@ -11,36 +11,9 @@ function SideBar({ robot, setRobot, paths, setPaths, animationState, setAnimatio
 
   return (
     <div className="Side-bar">
-      <button onClick={() => saveFTCAutoFile({ robot, paths, obstacles })}>
-        Save Auto File
-      </button>
-
-      <input
-        type="file"
-        accept=".ftcpath,application/json"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={(e) => {
-          const file = e.target.files[0];
-          if (file) {
-            loadFTCAutoFile(file, { setRobot, setPaths, setObstacles });
-            e.target.value = ""; // Reset input so re-selecting same file works
-          }
-        }}
-      />
-
-      <button onClick={() => fileInputRef.current?.click()}>Load Auto File</button>
-
-      <button onClick={() => exportPathData(paths)}>
-        Export Paths for Pathing
-      </button>
-
-
-      <AttributesInputField robot={robot} setRobot={setRobot}/>
       <PathManager paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} modules={modules} setModules={setModules}/>
       <ObstacleManager obstacles={obstacles} setObstacles={setObstacles} obstaclesExpanded={obstaclesExpanded} setObstaclesExpanded={setObstaclesExpanded} />
       <ModuleManager modules={modules} setModules={setModules} modulesExpanded={modulesExpanded} setModulesExpanded={setModulesExpanded} addedModules={addedModules} setAddedModules={setAddedModules} paths={paths} setPaths={setPaths} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} obstacles={obstacles} robot={robot} />
-      <AnimationControls animationState={animationState} setAnimationState={setAnimationState} paths={paths} robot={robot} setRobot={setRobot} />
     </div>
   );
 }

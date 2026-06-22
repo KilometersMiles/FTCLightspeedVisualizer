@@ -18,6 +18,14 @@ body {
   overflow: hidden;
 }
 
+.Workspace-Layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
 .App {
   text-align: center;
   height: 100vh;
@@ -59,8 +67,11 @@ body {
    ========================================================================== */
 .Field-map {
   position: relative;
-  flex: 1;
-  max-width: calc(100vh - 48px);
+  /* flex: 1; */
+  flex: 0 0 auto;
+  /* max-width: calc(100vh - 48px); */
+  width:auto;
+  max-height: 100%;
   aspect-ratio: 1;
   border-radius: 16px;
   overflow: hidden;
@@ -90,14 +101,45 @@ body {
 .Field-canvas { z-index: 10; }
 .Points-canvas { z-index: 20; cursor: crosshair; }
 
+.Main-Content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+  height: calc(100vh - 146px); /* 100vh minus TopBar (56px) and BottomBar (90px) */
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.Bottom-playback-bar {
+  height: 90px;
+  background: rgba(8, 8, 12, 0.6);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  padding: 16px 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  z-index: 30;
+}
+
+.Bottom-playback-bar .animation-controls {
+  width: 100%;
+  margin-top: 0; /* Override old spacing margins */
+}
 /* ==========================================================================
    3. Sidebar Section & Section Containers (Updated Spacing)
    ========================================================================== */
 .Side-bar {
-  width: 45%;
-  max-width: 600px;
+  /* width: 45%; */
+  height: 100%;
   min-width: 360px;
-  height: calc(100vh - 48px);
+  /* height: calc(100vh - 48px); */
   background: rgba(255, 255, 255, 0.01);
   border: 1px solid var(--border-color);
   backdrop-filter: blur(10px);
@@ -112,6 +154,18 @@ body {
   text-align: left;
 }
 
+.Top-bar {
+  height: 56px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 30;
+}
+
 /* Glassmorphic Panel Groups */
 .Input-field, .path-manager, .obstacle-manager, .module-manager, .module-creator {
   background: rgba(255, 255, 255, 0.02);
@@ -123,7 +177,7 @@ body {
 }
 
 .Input-field:hover, .path-manager:hover, .obstacle-manager:hover, .module-manager:hover {
-  border-color: rgba(125, 211, 252, 0.3);
+  /* border-color: rgba(125, 211, 252, 0.3); */
   box-shadow: 0 4px 20px -5px rgba(125, 211, 252, 0.05);
 }
 
@@ -169,6 +223,92 @@ h5 {
   color: var(--accent-blue);
 }
 
+.Top-bar h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--accent-blue);
+  margin: 0;
+}
+
+.Top-bar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Top-bar-buttons .Divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 8px;
+}
+
+/* Icon button uniform sizing */
+.Top-bar-buttons button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px; /* Slightly squared premium look */
+  margin: 0;
+}
+.Config-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Styled floating panel */
+.Config-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: #111116; /* Solid dark background to prevent bleed-through */
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 100; /* Ensure it floats over the canvas and sidebar */
+  animation: fadeInConfig 0.15s ease-out;
+}
+
+/* Style adjustment inside the dropdown to make it blend well */
+.Config-dropdown .Input-field {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.Config-dropdown h5 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--accent-blue);
+  letter-spacing: 0.3px;
+}
+
+/* Make active button highlight state look smooth */
+.Config-container button.active {
+  background: rgba(125, 211, 252, 0.15);
+  color: var(--accent-blue);
+  border-color: rgba(125, 211, 252, 0.3);
+}
+
+/* Optional entry animation */
+@keyframes fadeInConfig {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* ==========================================================================
    4. Strict Row Separated Input Grids (Coordinates Top, Controls Bottom)
    ========================================================================== */
@@ -189,6 +329,7 @@ h5 {
 .coordinates-row, .Attribute-input-items-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   width: 100%;
   gap: 8px;
 }
@@ -199,7 +340,7 @@ h5 {
   align-items: flex-start;
   gap: 4px;
   flex: 1;
-  min-width: 0; /* Allows numbers and wrappers to shrink without blowing layout */
+  min-width: 100px; /* Allows numbers and wrappers to shrink without blowing layout */
 }
 
 .Attribute-input-item label, .coord-input-wrapper span, .Path-point-input span {
@@ -312,6 +453,8 @@ button {
   color: var(--text-main);
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
+  margin-top: 5px;
+  margin-bottom: 5px;
   padding: 8px 18px;
   font-size: 12px;
   font-weight: 600;
@@ -327,10 +470,10 @@ button {
 }
 
 button:hover {
-  transform: translateY(-2px) scale(1.03);
+  /* transform: translateY(-2px) scale(1.03); */
   color: var(--accent-blue);
   border-color: var(--accent-blue);
-  background: rgba(125, 211, 252, 0.05);
+  /* background: rgba(125, 211, 252, 0.05); */
   box-shadow: 0 0 12px rgba(125, 211, 252, 0.3);
 }
 
@@ -369,7 +512,20 @@ button:disabled {
 @keyframes cyber-spin {
   to { transform: rotate(360deg); }
 }
+.cyber-spin {
+  animation: cyberRotate 0.8s linear infinite;
+  flex-shrink: 0;
+  display: inline-block;
+}
 
+@keyframes cyberRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 /* ==========================================================================
    8. Timeline Player Controls & Scrollbars
    ========================================================================== */

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import { getPredictableColor } from '../utils/colors';
+import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
 
 function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
   const [saveStatus, setSaveStatus] = useState('saved');
@@ -154,12 +155,16 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
   };
 
   const handleDeleteModule = (module) => {
-    setModules(prev => prev.filter(item => item !== module));
-    //save new modules
-    if (window.electronAPI) {
-      window.electronAPI.saveData('modules', modules);
-    }
+    const userConfirmed = confirm("Are you sure you want to delete this module permanently? There is no coming back");
 
+    if (userConfirmed) {
+      setModules(prev => prev.filter(item => item !== module));
+      //save new modules
+      if (window.electronAPI) {
+        window.electronAPI.saveData('modules', modules);
+      }
+
+    }
   };
 
   return (
@@ -169,13 +174,19 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
       </div>
       {added && (
         <div className="module-controls">
-          <button onClick={() => handleRemoveModule(index)}>Remove</button>
+          <button onClick={() => handleRemoveModule(index)} title="Remove From Paths">
+            <Minus size={14} />
+          </button>
         </div>
       )}
       {!added && (
         <div className="module-controls">
-          <button onClick={() => handleAddModule(module)}>Add</button>
-          <button onClick={() => handleDeleteModule(module)}>Delete</button>
+          <button onClick={() => handleAddModule(module)} title="Add Module">
+            <Plus size={14} />
+          </button>
+          <button onClick={() => handleDeleteModule(module)} title="Delete Module (permanently)">
+            <Trash2 size={14} />
+          </button>
         </div>
       )}
     </div>

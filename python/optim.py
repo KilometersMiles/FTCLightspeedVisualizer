@@ -62,9 +62,9 @@ def findTrajectory (waypoints, obstacles, robot):
     # does have some assumptions, but are reasonable
 
     #move to robot class later
-    Bx = .2
-    By = .15
-    Bz = .25
+    Bx = 1
+    By = .75
+    Bz = 1
 
     def getDynamicModel(x, u):
         theta = x[4]

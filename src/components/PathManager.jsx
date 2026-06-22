@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
 import { getPredictableColor } from '../utils/colors';
 import { ROBOT_ATTRIBUTES } from '../utils/initialData';
 import LightningButton from './LightningButton';
@@ -86,14 +87,15 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       ))}
 
       <div className="path-controls">
-        <button onClick={handleAddPath}>
-          Add Path
+        <button onClick={handleAddPath} title='Add Path'>
+          <Plus size={14} />&nbsp;&nbsp;Add Path
         </button>
         <button
           onClick={handleRemovePath}
           disabled={paths.length <= 1}
+          title='Remove Path'
         >
-          Remove Path
+          <Trash2 size={14} />&nbsp;&nbsp;Remove Path
         </button>
       </div>
     </div>
@@ -244,27 +246,16 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
       ))}
 
       <div className="point-controls">
-        <button onClick={handleAddPoint}>
-          Add Point
+        {/* <button onClick={handleAddPoint} title='Add Point to End'>
+          <Plus size={14} />
         </button>
         <button
           onClick={handleRemovePoint}
           disabled={path.points.length <= 1}
+          title='Remove Point from end'
         >
-          Remove Point
-        </button>
-        <button
-          onClick={() => {
-            setPaths(prev => {
-              const updated = [...prev];
-              updated.splice(index, 1);
-              return updated;
-            });
-          }}
-          disabled={paths.length <= 1}
-        >
-          Delete Path
-        </button>
+          <Minus size={14} />
+        </button> */}
         <button
           onClick={() => {
             setPathsTotal(prev => prev + 1);
@@ -280,23 +271,40 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
               return updated;
             });
           }}
+          title='Add Path'
         >
-          Add Path Below
+          <Plus size={14} />&nbsp;&nbsp;Add Path
         </button>
         <button
-          onClick={() => handleCreateModule()}
+          onClick={() => {
+            setPaths(prev => {
+              const updated = [...prev];
+              updated.splice(index, 1);
+              return updated;
+            });
+          }}
+          disabled={paths.length <= 1}
+          title="Delete Path"
         >
-          Create Module
+          <Trash2 size={14} />&nbsp;&nbsp;Delete Path
+        </button>
+
+        <button
+          onClick={() => handleCreateModule()}
+          title='Create Module'
+        >
+          <Box size={14} />
         </button>
         <LightningButton
           className={`generate-btn ${isLoading ? 'loading' : ''}`}
           onClick={() => handleGeneratePath(index)}
           disabled={path.points.length < 2 || isLoading}
+          isLoading={isLoading}
         >
-          {isLoading ? (
-            <span className="spinner"></span>
+          {!isLoading ? (
+            <Zap size={14} />
           ) : (
-            "Generate Path"
+            <div style={{display: 'none'}}/>
           )}
         </LightningButton>
       </div>
@@ -415,29 +423,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             }
           /> Lock H
         </label>
-        <button
-          onClick={() => {
-            setPaths(prev => {
-              const updated = [...prev];
-              updated[pathIndex].points.splice(pointIndex, 1);
-              const newPathPoints = [];
-              for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
-                const p1 = updated[pathIndex].points[i];
-                const p2 = updated[pathIndex].points[i + 1];
 
-                // Simple 2-point linear path for each segment
-                newPathPoints.push({ x: p1.x, y: p1.y });
-                newPathPoints.push({ x: p2.x, y: p2.y });
-              }
-              updated[pathIndex].pathpoints = newPathPoints;
-
-              return updated;
-            });
-          }}
-          disabled={paths[pathIndex].points.length <= 2}
-        >
-          Delete
-        </button>
         <button
           onClick={() => {
             setPaths(prev => {
@@ -458,8 +444,33 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
               return updated;
             });
           }}
+          title='Add Point'
         >
-          Add
+          <Plus size={14} />
+        </button>
+        <button
+          onClick={() => {
+            setPaths(prev => {
+              const updated = [...prev];
+              updated[pathIndex].points.splice(pointIndex, 1);
+              const newPathPoints = [];
+              for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
+                const p1 = updated[pathIndex].points[i];
+                const p2 = updated[pathIndex].points[i + 1];
+
+                // Simple 2-point linear path for each segment
+                newPathPoints.push({ x: p1.x, y: p1.y });
+                newPathPoints.push({ x: p2.x, y: p2.y });
+              }
+              updated[pathIndex].pathpoints = newPathPoints;
+
+              return updated;
+            });
+          }}
+          disabled={paths[pathIndex].points.length <= 2}
+          title='Delete Point'
+        >
+          <Trash2 size={14} />
         </button>
       </div>
     </div>

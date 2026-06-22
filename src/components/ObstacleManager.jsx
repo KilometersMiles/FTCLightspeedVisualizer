@@ -1,3 +1,5 @@
+import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
+
 function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstaclesExpanded }) {
 
   const handleAddObstacle = () => {
@@ -41,14 +43,15 @@ function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstac
       )}
 
       {obstaclesExpanded && (<div className="obstacle-controls">
-        <button onClick={handleAddObstacle}>
-          Add Obstacle
+        <button onClick={handleAddObstacle} title='Add Obstacle'>
+          <Plus size={14}/>&nbsp;&nbsp;Add Obstacle
         </button>
         <button 
           onClick={handleRemoveObstacle} 
           disabled={obstacles.length <= 0}
+          title="Remove Obstacle"
         >
-          Remove Obstacle
+          <Trash2 size={14} />&nbsp;&nbsp;Remove Obstacle
         </button>
       </div>
       )}
@@ -128,14 +131,15 @@ function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setOb
         </div>
       ))}
       <div className="obstacle-point-controls">
-        <button onClick={handleAddPoint}>
-          Add Point
+        <button onClick={handleAddPoint} title='Add Point'>
+          <Plus size={14}/>
         </button>
         <button 
           onClick={handleRemovePoint} 
           disabled={obstacle.points.length <= 3}
+          title='Remove Icon'
         >
-          Remove Point
+          <Trash2 size={14}/>
         </button>
       </div>
     </div> 
