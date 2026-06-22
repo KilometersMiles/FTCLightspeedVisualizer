@@ -1,0 +1,19 @@
+1. Fix checkbox behavior
+2. Make robot attributes update stuff
+2. Fix animation on unoptimized paths
+3. Make initial values on optimizer better
+4. Make optimizer based on voltage ---- check
+5. Tune drag constants
+6. Logo
+8. Build into actual app
+7. ReadMe
+
+SHIP
+
+Additional unessential features for later
+1. Visual feedback on speed (rainbow path)
+2. Constrain generation to within the field
+3. Update robot graphic to be better
+4. Green feedback color for succesful operations
+5. Helpful error messages
+6. Help/docs menu option

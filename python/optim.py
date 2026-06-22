@@ -1,5 +1,4 @@
 # Uses force/torque based model. Pretty good assumtions. check https://stumejournals.com/journals/tm/2025/2/51.full.pdf for info on modeling assumptions
-# TODO: approximate torque from voltage, then restrict voltage instead
 # TODO: better initial guesses. Probably use quitic hermite splines and maybe even invert the dynamics to guess times and controls.
 import casadi as ca
 import numpy as np
@@ -39,10 +38,10 @@ def findTrajectory (waypoints, obstacles, robot):
     robotRadius = robot.radius
     mu = robot.mu
 
-    # Vmax = robot.motor.Vmax
-    # Kt = robot.motor.torqueConstant
-    # Kv = robot.motor.radPerVolt
-    # R = robot.motor.resistance
+    Vmax = robot.motor.Vmax
+    Kt = robot.motor.torqueConstant
+    Kv = robot.motor.radPerVolt
+    R = robot.motor.resistance
 
     maxTorque = 5 #Nm
 
@@ -72,7 +71,18 @@ def findTrajectory (waypoints, obstacles, robot):
         vyBody = x[3]
         omega = x[5]
 
-        torque1, torque2, torque3, torque4 = u[0], u[1], u[2], u[3]
+        v1, v2, v3, v4 = u[0], u[1], u[2], u[3]
+
+        #approximations of wheel speeds using mecanum kinematics to calculate back-emf
+        w1_wheel = (vxBody - vyBody - (lx + ly) * omega) / r
+        w2_wheel = (vxBody + vyBody + (lx + ly) * omega) / r
+        w3_wheel = (vxBody + vyBody - (lx + ly) * omega) / r
+        w4_wheel = (vxBody - vyBody + (lx + ly) * omega) / r
+
+        torque1 = (Kt / R) * (v1 - (w1_wheel / Kv))
+        torque2 = (Kt / R) * (v2 - (w2_wheel / Kv))
+        torque3 = (Kt / R) * (v3 - (w3_wheel / Kv))
+        torque4 = (Kt / R) * (v4 - (w4_wheel / Kv))
 
         forceX = (torque1 + torque2 + torque3 + torque4)*(1/(np.sqrt(2)* r))
         forceY = (-torque1 + torque2 + torque3 - torque4)*(1/(np.sqrt(2)*r))
@@ -123,11 +133,34 @@ def findTrajectory (waypoints, obstacles, robot):
             #     maxWheelForce = (mu * (mass * 9.81 / 4)) **2
             #     opti.subject_to(forceOfWheelSquared <= maxWheelForce)
 
+            # Redo the torque calcs outside of getDynamics to bound wheel force without creating 4x constraints
             maxWheelForce = mu * (mass * 9.81 / 4)
-            wheel_forces = U / r
-            opti.subject_to(opti.bounded(-maxWheelForce, wheel_forces, maxWheelForce))
-            
-        opti.subject_to(opti.bounded(-maxTorque, U, maxTorque))
+            vxBody = X[1, k]
+            vyBody = X[3, k]
+            omega = X[5, k]
+
+            V1, V2, V3, V4 = U[0, k], U[1, k], U[2, k], U[3, k]
+
+            w1 = (vxBody - vyBody - (lx + ly) * omega) / r
+            w2 = (vxBody + vyBody + (lx + ly) * omega) / r
+            w3 = (vxBody + vyBody - (lx + ly) * omega) / r
+            w4 = (vxBody - vyBody + (lx + ly) * omega) / r
+
+            t1 = (Kt / R) * (V1 - (w1 / Kv))
+            t2 = (Kt / R) * (V2 - (w2 / Kv))
+            t3 = (Kt / R) * (V3 - (w3 / Kv))
+            t4 = (Kt / R) * (V4 - (w4 / Kv))
+
+            f1 = t1 / r
+            f2 = t2 / r
+            f3 = t3 / r
+            f4 = t4 / r      
+
+            opti.subject_to(opti.bounded(-maxWheelForce, f1, maxWheelForce))
+            opti.subject_to(opti.bounded(-maxWheelForce, f2, maxWheelForce))
+            opti.subject_to(opti.bounded(-maxWheelForce, f3, maxWheelForce))
+            opti.subject_to(opti.bounded(-maxWheelForce, f4, maxWheelForce))  
+        opti.subject_to(opti.bounded(-robot.motor.Vmax, U, robot.motor.Vmax))
 
     for i in range(numSegments + 1):        
         wp = waypoints[i]
