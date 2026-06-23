@@ -1,32 +1,38 @@
-import { ROBOT_ATTRIBUTES } from '../utils/initialData';
-
-function AttributesInputField({ robot, setRobot }) {
-  const listItems = ROBOT_ATTRIBUTES.map((attribute) => (
+function AttributesInputField({ attributes, setAttributes, robot, setRobot }) {
+  const listItems = attributes.map((attribute, index) => (
     <div key={attribute.name} className="Attribute-input-item">
       <label>{attribute.name}:</label>
-      <input 
-        className="Attribute-input-number" 
-        type="number" 
-        defaultValue={attribute.defaultValue}
+      <input
+        className="Attribute-input-number"
+        type="number"
+        value={attribute.defaultValue}
         onChange={(e) => {
           const newValue = parseFloat(e.target.value);
           if (!isNaN(newValue)) {
             setRobot(prev => {
-              const updated = {...prev};
-              if (attribute.name === "Speed") {
-                updated.speed = newValue; // Store directly in mm/s
+              const updated = { ...prev };
+              const name = attribute.name
+                .replace(/\s*\([^)]*\)/g, "")
+                .replace(/\s+/g, "")
+                .toLowerCase();
+              if (name == "width" || name == "length" || name == "buffer") {
+                updated[name] = newValue * 25.4; // Convert to mm
               } else {
-                updated[attribute.name.toLowerCase()] = newValue * 25.4; // Convert to mm
+                updated[name] = newValue;
               }
               return updated;
             });
+            setAttributes(prev => {
+              const updated = [ ...prev ];
+              updated[index] = { ...updated[index], defaultValue: newValue };
+              return updated;
+            });
           }
-          console.log("Robot attributes updated:", robot);
-        }} 
+        }}
       />
     </div>
   ));
-  
+
   return (
     <div className="Input-field">
       <h5>Robot Attributes</h5>

@@ -16,7 +16,7 @@ const updateCheckboxDefaults = (points) => {
   });
 };
 
-function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
+function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
@@ -82,6 +82,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       {paths.map((path, index) => (
         <div key={index} className="path-container" style={{ border: `1px solid ${path.color}` }}>
           <PathInput
+            attributes={attributes}
             path={path}
             paths={paths}
             setPaths={setPaths}
@@ -114,7 +115,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
   );
 }
 
-function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
+function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
   const selectOption = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -177,10 +178,11 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
     abortControllers.current[index] = controller;
     try {
       console.log("Starting optimization for:", path.name);
-
+      console.log(attributes);
       const optimizedPoints = await window.electronAPI.runOptimizer({
         waypoints: path.points,
-        obstacles: obstacles
+        obstacles: obstacles,
+        attributes: attributes
       }, controller.signal);
 
       setPaths(prev => {

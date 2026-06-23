@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Save, FolderOpen, Download, Settings } from 'lucide-react';
+import { Save, FolderOpen, Download, Settings, Folder } from 'lucide-react';
 import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileHelpers';
 import AttributesInputField from './AttributesInputField';
 import Logo from "../assets/favicon-228.png";
 
-function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef }) {
+function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef }) {
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const configRef = useRef(null);
 
@@ -28,13 +28,9 @@ function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fil
             </div>
 
             <div className='Top-bar-buttons'>
-                <button onClick={() => saveFTCAutoFile({ robot, paths, obstacles })} title="Load Lightspeed file">
-                    <FolderOpen size={16} />
-                </button>
-
                 <input
                     type="file"
-                    accept=".ftcpath,application/json"
+                    accept=".lightspeed,application/json"
                     ref={fileInputRef}
                     style={{ display: "none" }}
                     onChange={(e) => {
@@ -45,7 +41,11 @@ function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fil
                         }
                     }}
                 />
-                <button onClick={() => fileInputRef.current?.click()} title="Save Lightspeed file">
+                <button onClick={() => fileInputRef.current?.click()} title="Load Lightspeed file">
+                    <FolderOpen size={16} />
+                </button>
+
+                <button onClick={() => saveFTCAutoFile({ robot, paths, obstacles })} title="Save Lightspeed file">
                     <Save size={16} />
                 </button>
 
@@ -66,7 +66,7 @@ function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fil
 
                     {isConfigOpen && (
                         <div className="Config-dropdown">
-                            <AttributesInputField robot={robot} setRobot={setRobot} />
+                            <AttributesInputField attributes={attributes} setAttributes={setAttributes} robot={robot} setRobot={setRobot} />
                         </div>
                     )}
                 </div>

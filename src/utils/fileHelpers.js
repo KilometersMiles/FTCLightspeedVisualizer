@@ -1,10 +1,9 @@
-// ---------- SAVE / LOAD HELPERS ---------- //
-
-export function saveFTCAutoFile({ robot, paths, obstacles }) {
+export function saveFTCAutoFile({ robot, paths, obstacles, attributes }) {
   try {
     const data = {
       version: 1,
       robot,
+      attributes,
       paths,
       obstacles,
       savedAt: new Date().toISOString(),
@@ -17,19 +16,19 @@ export function saveFTCAutoFile({ robot, paths, obstacles }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "auto.ftcpath";
+    a.download = "auto.lightspeed";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    console.log("Saved FTC path file successfully.");
+    console.log("Saved auto file successfully.");
   } catch (err) {
-    console.error("Failed to save FTC path file:", err);
+    console.error("Failed to save auto file:", err);
   }
 }
 
-export function loadFTCAutoFile(file, { setRobot, setPaths, setObstacles }) {
+export function loadFTCAutoFile(file, { setRobot, setPaths, setObstacles, setAttributes }) {
   if (!file) return;
   const reader = new FileReader();
 
@@ -41,11 +40,12 @@ export function loadFTCAutoFile(file, { setRobot, setPaths, setObstacles }) {
       if (json.robot) setRobot(json.robot);
       if (json.paths) setPaths(json.paths);
       if (json.obstacles) setObstacles(json.obstacles);
+      if (json.attributes) setAttributes(json.attributes);
 
-      console.log("✅ Loaded FTC path file successfully.", json);
+      console.log("Loaded auto file successfully.", json);
     } catch (err) {
-      console.error("Error loading FTC path file:", err);
-      alert("Failed to load FTC path file. Check the file format.");
+      console.error("Error loading auto file:", err);
+      alert("Failed to load auto file. Check the file format.");
     }
   };
 

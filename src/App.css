@@ -258,7 +258,7 @@ h5 {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 280px;
+  width: 300px;
   background: #111116; /* Solid dark background to prevent bleed-through */
   border: 1px solid var(--border-color);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
@@ -339,11 +339,11 @@ h5 {
 
 .Attribute-input-item label, .coord-input-wrapper span, .Path-point-input span {
   font-size: 11px;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   letter-spacing: 0.5px;
   color: var(--text-muted);
   white-space: nowrap;
-  overflow: hidden;
+  overflow: none;
   text-overflow: ellipsis;
   width: 100%;
 }

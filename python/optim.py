@@ -4,6 +4,7 @@ import casadi as ca
 import numpy as np
 import sys
 import json
+import re
 import matplotlib.pyplot as plt
 
 class Drivetrain:
@@ -303,8 +304,16 @@ def visualize_and_save(path_data, total_time):
 if __name__ == "__main__":
     try:
         input_data = json.load(sys.stdin) # Reads from stdin instead of sys.argv
-        raw_waypoints = input_data['waypoints']
-        
+        raw_waypoints = input_data.get('waypoints', [])
+        raw_obstacles = input_data.get('obstacles', [])
+        raw_attributes = input_data.get('attributes', []) 
+        if not raw_waypoints:
+            print("Warning: No waypoints sent from frontend. VERRY bad...", file=sys.stderr)        
+        if not raw_obstacles:
+            print("Warning: No waypoints sent from frontend. Bad...", file=sys.stderr)        
+
+        if not raw_attributes:
+            print("Warning: No attributes sent from frontend. Bad...", file=sys.stderr)        
         formatted_waypoints = []
         for p in raw_waypoints:
             formatted_waypoints.append({
@@ -319,8 +328,27 @@ if __name__ == "__main__":
             # {'x': 1, 'y': 1, 'radius': 0.0}
         ]
 
+        attributes_dict = {}
+        for attr in raw_attributes:
+            clean_name = re.sub(r'\s*\([^)]*\)', '', attr['name'])
+            clean_name = re.sub(r'\s+', '', clean_name).lower()
+    
+            attributes_dict[clean_name] = attr['defaultValue']
+
+        width = attributes_dict.get('width')
+        length = attributes_dict.get('length')
+        mass = attributes_dict.get('mass')
+        momentofinertia = attributes_dict.get('momentofinertia')
+        wheelradius = attributes_dict.get('wheelradius')
+        maxforwardspeed = attributes_dict.get('maxforwardspeed')/1000
+        maxstrafingspeed = attributes_dict.get('maxstrafingspeed')/1000
+        maxangularvelocity = attributes_dict.get('maxangularvelocity')
+        buffer = attributes_dict.get('buffer')
+        cof = attributes_dict.get('coefficientoffriction')
+
         gobilda435 = Motor(12, .1413, 3.795, 1.504)
-        robot = Drivetrain("Kevin", 15, .9, .052, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
+        # robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
+        robot = Drivetrain("Kevin", mass, momentofinertia, wheelradius, length, width, cof, gobilda435, maxforwardspeed, maxstrafingspeed, maxangularvelocity)
 
         result_path, total_t = findTrajectory(formatted_waypoints, obstacles, robot)
 

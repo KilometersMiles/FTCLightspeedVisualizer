@@ -6,12 +6,12 @@ import ModuleManager from './ModuleManager';
 import AnimationControls from './AnimationControls';
 import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileHelpers';
 
-function SideBar({ robot, setRobot, paths, setPaths, animationState, setAnimationState, obstacles, setObstacles, obstaclesExpanded, setObstaclesExpanded, modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, abortControllers, pathsTotal, setPathsTotal }) {
+function SideBar({ attributes, robot, setRobot, paths, setPaths, animationState, setAnimationState, obstacles, setObstacles, obstaclesExpanded, setObstaclesExpanded, modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, abortControllers, pathsTotal, setPathsTotal }) {
   const fileInputRef = useRef();
 
   return (
     <div className="Side-bar">
-      <PathManager paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} modules={modules} setModules={setModules}/>
+      <PathManager attributes={attributes} paths={paths} setPaths={setPaths} setRobot={setRobot} setAnimationState={setAnimationState} obstacles={obstacles} robot={robot} abortControllers={abortControllers} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} modules={modules} setModules={setModules}/>
       <ObstacleManager obstacles={obstacles} setObstacles={setObstacles} obstaclesExpanded={obstaclesExpanded} setObstaclesExpanded={setObstaclesExpanded} />
       <ModuleManager modules={modules} setModules={setModules} modulesExpanded={modulesExpanded} setModulesExpanded={setModulesExpanded} addedModules={addedModules} setAddedModules={setAddedModules} paths={paths} setPaths={setPaths} pathsTotal={pathsTotal} setPathsTotal={setPathsTotal} obstacles={obstacles} robot={robot} />
     </div>

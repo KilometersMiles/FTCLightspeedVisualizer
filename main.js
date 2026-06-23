@@ -18,12 +18,12 @@ function createWindow() {
   win.loadURL('http://localhost:3000'); 
 }
 
-ipcMain.handle('run-optimizer', async (event, { waypoints, obstacles }) => {
+ipcMain.handle('run-optimizer', async (event, payload) => {
   return new Promise((resolve, reject) => {
+    const { waypoints = [], obstacles = [], attributes = [] } = payload || {};    
     const pythonProcess = spawn('python', ['python/optim.py']);
 
-    // Write the data to the process directly
-    pythonProcess.stdin.write(JSON.stringify({ waypoints, obstacles }));
+    pythonProcess.stdin.write(JSON.stringify({ waypoints, obstacles, attributes }));
     pythonProcess.stdin.end();
 
     let result = '';
@@ -50,7 +50,7 @@ ipcMain.handle('run-optimizer', async (event, { waypoints, obstacles }) => {
       }
     });
     pythonProcess.stderr.on('data', (data) => {
-        console.error(`PYTHON ERROR: ${data.toString()}`); // This will show in your terminal/cmd
+        console.error(`PYTHON ERROR: ${data.toString()}`); 
     });
   });
 });
