@@ -5,6 +5,17 @@ import { ROBOT_ATTRIBUTES } from '../utils/initialData';
 import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import LightningButton from './LightningButton';
 
+const updateCheckboxDefaults = (points) => {
+  return points.map((point, index) => {
+    const isFirstOrLast = index === 0 || index === points.length - 1;
+    return {
+      ...point,
+      stop: point.userEditedStop !== undefined ? point.userEditedStop : isFirstOrLast,
+      constrainHeading: point.userEditedConstrain !== undefined ? point.userEditedConstrain : isFirstOrLast
+    };
+  });
+};
+
 function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
@@ -25,7 +36,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
     if (paths.length > 0 && firstPoint) {
       setPaths(prev => [...prev, {
         name: `Path ${prev.length + 1}`,
-        points: [{ x: firstPoint.x, y: firstPoint.y }, newPoint],
+        points: updateCheckboxDefaults([{ x: firstPoint.x, y: firstPoint.y }, newPoint]),
         pathpoints: [{ x: firstPoint.x, y: firstPoint.y }, newPoint],
         color: getPredictableColor(pathsTotal)
       }]);
@@ -34,7 +45,7 @@ function PathManager({ paths, setPaths, setRobot, setAnimationState, robot, obst
       // default point at (0, 0)
       setPaths(prev => [...prev, {
         name: `Path ${prev.length + 1}`,
-        points: [{ x: 0, y: 0 }, newPoint],
+        points: updateCheckboxDefaults([{ x: 0, y: 0 }, newPoint]),
         pathpoints: [{ x: 0, y: 0 }, newPoint],
         color: getPredictableColor(pathsTotal)
       }]);
@@ -200,7 +211,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
       const newPath = generateOptimalPath(path, obstacles, robot);
       setPaths(prev => {
         const updated = [...prev];
-        updated[index].points = newPath.points;
+        updated[index].points = updateCheckboxDefaults(newPath.points);
         const newPathPoints = [];
         for (let i = 0; i < updated[index].points.length - 1; i++) {
           const p1 = updated[index].points[i];
@@ -280,7 +291,7 @@ function PathInput({ path, paths, setPaths, index, setRobot, obstacles, robot, a
               const updated = [...prev];
               const newPath = {
                 name: `Path ${updated.length + 1}`,
-                points: [{ x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y }, { x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300) }],
+                points: updateCheckboxDefaults([{ x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y }, { x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300) }]),
                 pathpoints: [{ x: path.points[path.points.length - 1].x, y: path.points[path.points.length - 1].y }, { x: path.points[path.points.length - 1].x + (Math.random() * 600 - 300), y: path.points[path.points.length - 1].y + (Math.random() * 600 - 300) }],
                 color: getPredictableColor(pathsTotal)
               };
@@ -429,7 +440,12 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             onChange={(e) =>
               setPaths(prev => {
                 const updated = [...prev];
-                updated[pathIndex].points[pointIndex].stop = e.target.checked;
+                updated[pathIndex].points[pointIndex] = {
+                  ...updated[pathIndex].points[pointIndex],
+                  constrainHeading: e.target.checked,
+                  userEditedStop: e.target.checked
+                };
+                updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
                 return updated;
               })
             }
@@ -441,7 +457,12 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             onChange={(e) =>
               setPaths(prev => {
                 const updated = [...prev];
-                updated[pathIndex].points[pointIndex].constrainHeading = e.target.checked;
+                updated[pathIndex].points[pointIndex] = {
+                  ...updated[pathIndex].points[pointIndex],
+                  stop: e.target.checked,
+                  userEditedConstrain: e.target.checked
+                };
+                updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
                 return updated;
               })
             }
@@ -454,6 +475,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
               const updated = [...prev];
               const newPoint = { x: point.x + (Math.random() * 600 - 300), y: point.y + (Math.random() * 600 - 300) }; // Add random -600-600mm offset
               updated[pathIndex].points.splice(pointIndex + 1, 0, newPoint);
+              updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
               const newPathPoints = [];
               for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
                 const p1 = updated[pathIndex].points[i];
@@ -477,6 +499,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
             setPaths(prev => {
               const updated = [...prev];
               updated[pathIndex].points.splice(pointIndex, 1);
+              updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
               const newPathPoints = [];
               for (let i = 0; i < updated[pathIndex].points.length - 1; i++) {
                 const p1 = updated[pathIndex].points[i];

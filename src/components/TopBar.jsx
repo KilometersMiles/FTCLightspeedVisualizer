@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Save, FolderOpen, Download, Settings } from 'lucide-react';
 import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileHelpers';
 import AttributesInputField from './AttributesInputField';
+import Logo from "../assets/favicon-228.png";
 
 function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef }) {
     const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -21,7 +22,8 @@ function TopBar({ robot, setRobot, paths, setPaths, obstacles, setObstacles, fil
 
     return (
         <div className='Top-bar'>
-            <div className="Logo">
+            <div className="LogoContainer">
+                <img className="Logo" src={Logo} alt="FTC Lightspeed" />
                 <h3>FTC LIGHTSPEED</h3>
             </div>
 
