@@ -1,10 +1,10 @@
 1. Fix checkbox behavior
 2. Make robot attributes update stuff
 2. Fix animation on unoptimized paths
-3. Make initial values on optimizer better
+3. Make initial values on optimizer better 
 4. Make optimizer based on voltage ---- check
-5. Tune drag constants
-6. Logo
+5. Tune drag constants --- check
+6. Logo --- check
 8. Build into actual app
 7. ReadMe
 
