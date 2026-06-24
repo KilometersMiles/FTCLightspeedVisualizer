@@ -23,10 +23,7 @@ export const INITIAL_ROBOT = {
   maxforwardspeed: ROBOT_ATTRIBUTES[6].defaultValue,
   maxstrafingspeed: ROBOT_ATTRIBUTES[7].defaultValue,
   get speed() {
-    return Math.sqrt(
-      this.maxforwardspeed * this.maxforwardspeed +
-      this.maxstrafingspeed * this.maxstrafingspeed
-    );
+    return 1 / ((Math.cos(this.heading * (Math.PI / 180))/this.maxforwardspeed)+(Math.sin(this.heading * (Math.PI / 180))/this.maxstrafingspeed))
   },
   buffer: ROBOT_ATTRIBUTES[9].defaultValue * 25.4
 };

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { ROBOT_ATTRIBUTES } from '../utils/initialData';
 
 function AnimationControls({
+  attributes,
   animationState,
   setAnimationState,
   paths,
@@ -32,40 +33,73 @@ function AnimationControls({
         let pathTime = 0;
         const points = path.points;
         let pathDistance = 0;
+        const segmentDistances = [];
         for (let i = 1; i < points.length; i++) {
           const dx = points[i].x - points[i - 1].x;
           const dy = points[i].y - points[i - 1].y;
           pathDistance += Math.sqrt(dx * dx + dy * dy);
+          segmentDistances.push(pathDistance);
         }
-        const accelTime = robot.speed / ROBOT_ATTRIBUTES[2].defaultValue;
-        const accelDistance = 0.5 * ROBOT_ATTRIBUTES[2].defaultValue * accelTime * accelTime;
+        const acceleration = 1000; //mm/s just a heuristic not a optimizable variable
+        const accelTime = robot.speed / acceleration;
+        const accelDistance = 0.5 * acceleration * accelTime * accelTime;
+        let timeAccel = 0;
+        let timeDecel = 0;
+        let timeCuise = 0;
         if (pathDistance < 2 * accelDistance) {
           // Triangle profile
-          pathTime = 2 * Math.sqrt(pathDistance / ROBOT_ATTRIBUTES[2].defaultValue);
+          pathTime = 2 * Math.sqrt(pathDistance / acceleration);
+          timeAccel = pathTime / 2;
+          timeDecel = pathTime / 2;
         } else {
           // Trapezoidal profile
           const cruiseDistance = pathDistance - 2 * accelDistance;
           const cruiseTime = cruiseDistance / robot.speed;
           pathTime = 2 * accelTime + cruiseTime;
+          timeAccel = accelTime;
+          timeDecel = accelTime;
+          timeCruise = cruiseTime;
         }
-        // add points to timeline with timestamps
-        const sampleSteps = Math.max(10, points.length * 4);
-        for (let j = 0; j <= sampleSteps; j++) {
-          const ratio = j / sampleSteps;
-          const segmentIndex = Math.min(Math.floor(ratio * (points.length - 1)), points.length - 2);
-          const segmentRatio = (ratio * (points.length - 1)) - segmentIndex;
+        const timeSteps = 30; //matches optimizer
+        const countingTime = 0;
+        for (let j = 0; j <= timeSteps; j++) {
+          var timeTraveled = (j / timeSteps) * pathTime;
+          console.log(timeTraveled);
+          var distanceForThisPoint = 0;
+          if (timeTraveled <= timeAccel) {
+            distanceForThisPoint = .5 * acceleration * timeTraveled * timeTraveled;
+          } else if (timeTraveled < timeAccel + timeCuise) {
+            const dAccelMax = 0.5 * acceleration * timeAccel * timeAccel;
+            distanceForThisPoint = dAccelMax + (robot.speed * (timeTraveled - timeAccel));
+          } else {
+            const timeRemaining = pathTime - timeTraveled;
+            distanceForThisPoint = pathDistance - (0.5 * acceleration * timeRemaining * timeRemaining);
+          }
 
+          const ratio = distanceForThisPoint / pathDistance;
+          let segmentIndex = 0;
+          while (segmentIndex < segmentDistances.length - 1 && segmentDistances[segmentIndex] < distanceForThisPoint) {
+            segmentIndex++;
+          }
+          let segmentRatio = 0;
+          const startDist = segmentIndex === 0 ? 0 : segmentDistances[segmentIndex - 1];
+          const endDist = segmentDistances[segmentIndex];
+          const segmentLength = endDist - startDist;
+          if (segmentLength > 0) {
+            segmentRatio = (distanceForThisPoint - startDist) / segmentLength;
+          }
           const p1 = points[segmentIndex];
           const p2 = points[segmentIndex + 1] || p1;
 
           timeline.push({
-            globalTime: cumulativeTime + (ratio * pathTime),
+            globalTime: cumulativeTime + timeTraveled,
             x: p1.x + segmentRatio * (p2.x - p1.x),
             y: p1.y + segmentRatio * (p2.y - p1.y),
             h: p1.h + segmentRatio * (shortestAngle(p1.h, p2.h)),
             v: robot.speed
           });
         }
+        console.log(timeline);
         cumulativeTime += pathTime;
 
       } else {
@@ -87,7 +121,7 @@ function AnimationControls({
           const dx = points[i].x - points[i - 1].x;
           const dy = points[i].y - points[i - 1].y;
           const segmentLength = Math.sqrt(dx * dx + dy * dy);
-          const velocity = Math.max(points[i].v * 1000 /*convert to mm/s from m/s*/|| 0, 10.0); // min speed to prevent infinite time on beginnings of paths
+          const velocity = Math.max(points[i].v * 1000 /*convert to mm/s from m/s*/ || 0, 10.0); // min speed to prevent infinite time on beginnings of paths
           pathTime += segmentLength / velocity;
 
           timeline.push({ globalTime: cumulativeTime + pathTime, x: points[i].x, y: points[i].y, h: points[i].h || 0, v: velocity });

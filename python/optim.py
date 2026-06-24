@@ -394,8 +394,8 @@ if __name__ == "__main__":
     
             attributes_dict[clean_name] = attr['defaultValue']
 
-        width = attributes_dict.get('width') * 25.4 / 1000 # inches to meters
-        length = attributes_dict.get('length')* 25.4 / 1000
+        width = attributes_dict.get('width') * 25.4 / 1000
+        length = attributes_dict.get('length') * 25.4 / 1000
         mass = attributes_dict.get('mass')
         momentofinertia = attributes_dict.get('momentofinertia')
         wheelradius = attributes_dict.get('wheelradius')

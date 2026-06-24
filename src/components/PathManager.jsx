@@ -178,7 +178,6 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
     abortControllers.current[index] = controller;
     try {
       console.log("Starting optimization for:", path.name);
-      console.log(attributes);
       const optimizedPoints = await window.electronAPI.runOptimizer({
         waypoints: path.points,
         obstacles: obstacles,
