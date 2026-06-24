@@ -45,7 +45,7 @@ function AnimationControls({
         const accelDistance = 0.5 * acceleration * accelTime * accelTime;
         let timeAccel = 0;
         let timeDecel = 0;
-        let timeCuise = 0;
+        let timeCruise = 0;
         if (pathDistance < 2 * accelDistance) {
           // Triangle profile
           pathTime = 2 * Math.sqrt(pathDistance / acceleration);
@@ -60,7 +60,7 @@ function AnimationControls({
           timeDecel = accelTime;
           timeCruise = cruiseTime;
         }
-        const timeSteps = 30; //matches optimizer
+        const timeSteps = 30*path.points.length; //matches optimizer
         const countingTime = 0;
         for (let j = 0; j <= timeSteps; j++) {
           var timeTraveled = (j / timeSteps) * pathTime;
@@ -68,7 +68,7 @@ function AnimationControls({
           var distanceForThisPoint = 0;
           if (timeTraveled <= timeAccel) {
             distanceForThisPoint = .5 * acceleration * timeTraveled * timeTraveled;
-          } else if (timeTraveled < timeAccel + timeCuise) {
+          } else if (timeTraveled < timeAccel + timeCruise) {
             const dAccelMax = 0.5 * acceleration * timeAccel * timeAccel;
             distanceForThisPoint = dAccelMax + (robot.speed * (timeTraveled - timeAccel));
           } else {
