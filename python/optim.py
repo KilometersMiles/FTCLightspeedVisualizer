@@ -32,6 +32,38 @@ class Motor:
         self.radPerVolt = radPerVolt
         self.resistance = resistance
 
+#t is from 0-1 NOT actual time
+#https://www.rose-hulman.edu/~finn/CCLI/Notes/day09.pdf
+def quinticHermiteSpline(t, p0, v0, a0, p1, v1, a1):
+    h0 = 1 - 10*t**3 + 15*t**4 - 6*t**5
+    h1 = t - 6*t**3 + 8*t**4 - 3*t**5
+    h2 = 0.5*t**2 - 1.5*t**3 + 1.5*t**4 - 0.5*t**5
+    h3 = 10*t**3 - 15*t**4 + 6*t**5
+    h4 = -4*t**3 + 7*t**4 - 3*t**5
+    h5 = 0.5*t**3 - 1*t**4 + 0.5*t**5
+
+    position = (h0 * p0) + (h1 * v0) + (h2 * a0) + (h3 * p1) + (h4 * v1) + (h5 * a1)
+
+    dh0 = -30*t**2 + 60*t**3 - 30*t**4
+    dh1 =   1 - 18*t**2 + 32*t**3 - 15*t**4
+    dh2 =   t - 4.5*t**2 + 6*t**3 - 2.5*t**4
+    dh3 = 1.5*t**2 -  4*t**3 + 2.5*t**4
+    dh4 = -12*t**2 + 28*t**3 - 15*t**4
+    dh5 =  30*t**2 - 45*t**3 + 30*t**4
+    
+    velocity = (dh0 * p0) + (dh1 * v0) + (dh2 * a0) + (dh3 * p1) + (dh4 * v1) + (dh5 * a1)
+
+    ddh0 = -60*t + 180*t**2 - 120*t**3
+    ddh1 = -36*t +  96*t**2 -  60*t**3
+    ddh2 =   1 -  9*t + 18*t**2 -  10*t**3
+    ddh3 =   3*t - 12*t**2 + 10*t**3
+    ddh4 = -24*t +  84*t**2 -  45*t**3
+    ddh5 =  60*t - 135*t**2 + 120*t**3
+    
+    acceleration = (ddh0 * p0) + (ddh1 * v0) + (ddh2 * a0) + (ddh3 * p1) + (ddh4 * v1) + (ddh5 * a1)
+    
+    return position, velocity, acceleration
+
 def findTrajectory (waypoints, obstacles, robot):
     opti = ca.Opti()
 
@@ -64,7 +96,6 @@ def findTrajectory (waypoints, obstacles, robot):
         Usegments.append(opti.variable(4, nPerSegment))
     
         opti.subject_to(Tsegments[i] >= 0.005)
-        opti.set_initial(Tsegments[i], 1) # Guess .1 second per leg
 
     # uses same dynamic model as shown in https://stumejournals.com/journals/tm/2025/2/51.full.pdf
     # does have some assumptions, but are reasonable
@@ -109,14 +140,42 @@ def findTrajectory (waypoints, obstacles, robot):
         X = Xsegments[i]
         U = Usegments[i]
 
+        #Quintic spline-based initial guess
         wp_start = waypoints[i]
         wp_end = waypoints[i+1]
+        wp_dis = np.sqrt((wp_end['x'] - wp_start['x'])**2 + (wp_end['y'] - wp_start['y'])**2)
+        #strafe speed good enough estimate, kinda avg between forward and diagonal speed
+        speed = robot.maxStrafeSpeed;
+        wp_time_estimate = max(wp_dis / speed, 0.01)
+        opti.set_initial(Tsegments[i], wp_time_estimate) 
+
+        pStart = np.array([wp_start['x'], wp_start['y']])
+        pEnd = np.array([wp_end['x'], wp_end['y']])
+        vStart = np.array([])
+        vEnd = np.array([])
+        aStart = np.array([])
+        aEnd = np.array([0,0])
+        if wp_start.get('stop', True):
+            vStart = np.array([0.0, 0.0])
+        else:
+            vStart = (pEnd - pStart) / (2 * wp_time_estimate)
+        if wp_end.get('stop', True):
+            vEnd = np.array([0.0, 0.0])
+        else:
+            vEnd = (pEnd - pStart) / (2 * wp_time_estimate)
+        aStart = (vEnd - vStart) / (2 * wp_time_estimate)
+
         for idx, k in enumerate(range(nPerSegment + 1)):
+            
             fraction = k / nPerSegment
-            guess_x = wp_start['x'] + fraction * (wp_end['x'] - wp_start['x'])
-            guess_y = wp_start['y'] + fraction * (wp_end['y'] - wp_start['y'])
+            guessPos, guessVel, guessAccel = quinticHermiteSpline(fraction, pStart, vStart, aStart, pEnd, vEnd, aEnd)
+            #linear for heading for simplicity
             guess_theta = wp_start['theta'] + fraction * (wp_end['theta'] - wp_start['theta'])
-            opti.set_initial(X[:, k], [guess_x, 0, guess_y, 0, guess_theta, 0])
+            cos_th = np.cos(guess_theta)
+            sin_th = np.sin(guess_theta)
+            v_body_x = guessVel[0] * cos_th + guessVel[1] * sin_th
+            v_body_y = -guessVel[0] * sin_th + guessVel[1] * cos_th
+            opti.set_initial(X[:, k], [guessPos[0], v_body_x, guessPos[1], v_body_y, guess_theta, 0])
 
         for k in range(nPerSegment):
             #RK4
@@ -335,8 +394,8 @@ if __name__ == "__main__":
     
             attributes_dict[clean_name] = attr['defaultValue']
 
-        width = attributes_dict.get('width')
-        length = attributes_dict.get('length')
+        width = attributes_dict.get('width') * 25.4 / 1000 # inches to meters
+        length = attributes_dict.get('length')* 25.4 / 1000
         mass = attributes_dict.get('mass')
         momentofinertia = attributes_dict.get('momentofinertia')
         wheelradius = attributes_dict.get('wheelradius')
