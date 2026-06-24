@@ -78,6 +78,7 @@ function App() {
             </div>
             <div className="Bottom-playback-bar">
                 <AnimationControls
+                    attributes={attributes}
                     animationState={animationState}
                     setAnimationState={setAnimationState}
                     paths={paths}
