@@ -3,18 +3,50 @@
   "version": "1.0.0",
   "description": "A path optimizer and editor for FTC robots",
   "main": "main.js",
+  "homepage": ".",
   "scripts": {
     "dev": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "react-start": "react-scripts start",
-    "react-build": "react-scripts build",
+    "build": "react-scripts build",
+    "dist": "electron-builder",
     "start": "electron .",
     "test": "react-scripts test"
   },
   "author": "Miles Higginson",
   "license": "ISC",
+  "build": {
+    "appId": "com.aluminumfalcons.ftclightspeed",
+    "productName": "FTC Lightspeed",
+    "extends": null,
+    "files": [
+      "main.js",
+      "preload.js",
+      "build/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "python/dist/optim",
+        "to": "backend/optim",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "electron": "^42.4.1",
+    "electron": "^42.5.0",
+    "electron-builder": "^26.15.3",
     "wait-on": "^9.0.3"
   },
   "dependencies": {

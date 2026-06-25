@@ -5,7 +5,6 @@ import numpy as np
 import sys
 import json
 import re
-import matplotlib.pyplot as plt
 
 class Drivetrain:
     def __init__(self, name, mass, moi, wheel, length, width, mu, motor, maxForwardSpeed, maxStrafeSpeed, maxAngularSpeed):
@@ -283,82 +282,83 @@ def findTrajectory (waypoints, obstacles, robot):
 
     return full_path_json, total_time_elapsed
 
-def visualize_and_save(path_data, total_time):
-    if not path_data: return
+# AI made this to help debug
+# def visualize_and_save(path_data, total_time):
+#     if not path_data: return
     
-    # Save JSON
-    with open('trajectory.json', 'w') as f:
-        json.dump(path_data, f, indent=4)
-    print(f"Success! Exported {len(path_data)} points to trajectory.json")
+#     # Save JSON
+#     with open('trajectory.json', 'w') as f:
+#         json.dump(path_data, f, indent=4)
+#     print(f"Success! Exported {len(path_data)} points to trajectory.json")
 
-    # 1. Extract and Calculate Frame Transformations
-    t = np.array([p['t'] for p in path_data])
-    x = np.array([p['x'] for p in path_data])
-    y = np.array([p['y'] for p in path_data])
-    theta = np.array([p['theta'] for p in path_data])
-    v_bx = np.array([p['vx'] for p in path_data])
-    v_by = np.array([p['vy'] for p in path_data])
-    omega = np.array([p['omega'] for p in path_data])
+#     # 1. Extract and Calculate Frame Transformations
+#     t = np.array([p['t'] for p in path_data])
+#     x = np.array([p['x'] for p in path_data])
+#     y = np.array([p['y'] for p in path_data])
+#     theta = np.array([p['theta'] for p in path_data])
+#     v_bx = np.array([p['vx'] for p in path_data])
+#     v_by = np.array([p['vy'] for p in path_data])
+#     omega = np.array([p['omega'] for p in path_data])
 
-    # Transform to Global Frame (World X, World Y)
-    v_gx = v_bx * np.cos(theta) - v_by * np.sin(theta)
-    v_gy = v_bx * np.sin(theta) + v_by * np.cos(theta)
+#     # Transform to Global Frame (World X, World Y)
+#     v_gx = v_bx * np.cos(theta) - v_by * np.sin(theta)
+#     v_gy = v_bx * np.sin(theta) + v_by * np.cos(theta)
 
-    # Calculate Path Frame (Tangent/Normal)
-    # The tangent angle is the direction of the global velocity vector
-    path_angle = np.arctan2(v_gy, v_gx + 1e-9)
-    v_mag = np.sqrt(v_gx**2 + v_gy**2)
+#     # Calculate Path Frame (Tangent/Normal)
+#     # The tangent angle is the direction of the global velocity vector
+#     path_angle = np.arctan2(v_gy, v_gx + 1e-9)
+#     v_mag = np.sqrt(v_gx**2 + v_gy**2)
     
-    # In the path frame, 'tangent' is just the magnitude of total velocity
-    # 'normal' (lateral slip relative to path) is usually near 0 for optimized paths
-    v_tangent = v_mag
-    v_normal = -v_gx * np.sin(path_angle) + v_gy * np.cos(path_angle)
+#     # In the path frame, 'tangent' is just the magnitude of total velocity
+#     # 'normal' (lateral slip relative to path) is usually near 0 for optimized paths
+#     v_tangent = v_mag
+#     v_normal = -v_gx * np.sin(path_angle) + v_gy * np.cos(path_angle)
 
-    # 2. Plotting
-    plt.figure(figsize=(16, 15))
+#     # 2. Plotting
+#     plt.figure(figsize=(16, 15))
     
-    # Row 1: Spatial Path and Heading
-    plt.subplot(3, 2, 1)
-    plt.plot(x, y, 'b-', linewidth=2)
-    plt.title(f"Optimized Path (Total Time: {total_time:.2f}s)")
-    plt.xlabel("X (m)"); plt.ylabel("Y (m)"); plt.axis('equal'); plt.grid(True)
-    # Draw obstacles
-    for obs in obstacles:
-        circle = plt.Circle((obs['x'], obs['y']), obs['radius'], color='r', alpha=0.3, label="Obstacle")
-        plt.gca().add_patch(circle)
-    plt.subplot(3, 2, 2)
-    plt.plot(t, np.degrees(theta), 'g-')
-    plt.title("Heading (Global Degrees)")
-    plt.xlabel("Time (s)"); plt.ylabel("Degrees"); plt.grid(True)
+#     # Row 1: Spatial Path and Heading
+#     plt.subplot(3, 2, 1)
+#     plt.plot(x, y, 'b-', linewidth=2)
+#     plt.title(f"Optimized Path (Total Time: {total_time:.2f}s)")
+#     plt.xlabel("X (m)"); plt.ylabel("Y (m)"); plt.axis('equal'); plt.grid(True)
+#     # Draw obstacles
+#     for obs in obstacles:
+#         circle = plt.Circle((obs['x'], obs['y']), obs['radius'], color='r', alpha=0.3, label="Obstacle")
+#         plt.gca().add_patch(circle)
+#     plt.subplot(3, 2, 2)
+#     plt.plot(t, np.degrees(theta), 'g-')
+#     plt.title("Heading (Global Degrees)")
+#     plt.xlabel("Time (s)"); plt.ylabel("Degrees"); plt.grid(True)
 
-    # Row 2: Body Frame vs Global Frame
-    plt.subplot(3, 2, 3)
-    plt.plot(t, v_bx, label="Forward (v_bx)")
-    plt.plot(t, v_by, label="Strafe (v_by)")
-    plt.title("Body Frame Velocities")
-    plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
+#     # Row 2: Body Frame vs Global Frame
+#     plt.subplot(3, 2, 3)
+#     plt.plot(t, v_bx, label="Forward (v_bx)")
+#     plt.plot(t, v_by, label="Strafe (v_by)")
+#     plt.title("Body Frame Velocities")
+#     plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
 
-    plt.subplot(3, 2, 4)
-    plt.plot(t, v_gx, label="Global Vx")
-    plt.plot(t, v_gy, label="Global Vy")
-    plt.title("Global Frame Velocities")
-    plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
+#     plt.subplot(3, 2, 4)
+#     plt.plot(t, v_gx, label="Global Vx")
+#     plt.plot(t, v_gy, label="Global Vy")
+#     plt.title("Global Frame Velocities")
+#     plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
 
-    # Row 3: Path Frame and Rotation
-    plt.subplot(3, 2, 5)
-    plt.plot(t, v_tangent, 'k-', label="Tangent (Speed)")
-    plt.plot(t, v_normal, 'm--', label="Normal (Path Slip)")
-    plt.title("Path Frame Velocities (Tangent/Normal)")
-    plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
+#     # Row 3: Path Frame and Rotation
+#     plt.subplot(3, 2, 5)
+#     plt.plot(t, v_tangent, 'k-', label="Tangent (Speed)")
+#     plt.plot(t, v_normal, 'm--', label="Normal (Path Slip)")
+#     plt.title("Path Frame Velocities (Tangent/Normal)")
+#     plt.xlabel("Time (s)"); plt.ylabel("m/s"); plt.legend(); plt.grid(True)
 
-    plt.subplot(3, 2, 6)
-    plt.plot(t, omega, 'r-')
-    plt.title("Angular Velocity (Omega)")
-    plt.xlabel("Time (s)"); plt.ylabel("rad/s"); plt.grid(True)
+#     plt.subplot(3, 2, 6)
+#     plt.plot(t, omega, 'r-')
+#     plt.title("Angular Velocity (Omega)")
+#     plt.xlabel("Time (s)"); plt.ylabel("rad/s"); plt.grid(True)
 
-    plt.tight_layout()
-    plt.savefig('trajectory_plots.png')
-    plt.show()
+#     plt.tight_layout()
+#     plt.savefig('trajectory_plots.png')
+#     plt.show()
 
 if __name__ == "__main__":
     try:
