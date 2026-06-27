@@ -7,9 +7,9 @@
 6. Logo --- check
 8. Build into actual app --- check
 7. ReadMe --- check
-8. Visual feedback on speed (rainbow path)
+8. Visual feedback on speed (rainbow path, where green is fast and red is slow)
 9. Constrain generation to within the field
-10. Update robot graphic to be better
-11. Green feedback color for succesful operations
-12. Helpful error messages
+10. Update robot graphic to be better (possibly match logo)
+11. Show whether or not path is optimized, can be hard to tell
+12. Helpful error messages --- check
 13. Help/docs menu option
