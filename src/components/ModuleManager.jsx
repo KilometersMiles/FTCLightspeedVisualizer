@@ -125,7 +125,7 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
 
     const pathPoints = generateOptimalPath(
       {
-        name: "Connection Path",
+        name: `${newModule.name} connection`,
         points: [firstPoint, moduleFirstPoint],
         startHeading: 0,
         endHeading: 0,

@@ -135,7 +135,6 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
             ctx.setLineDash([]);
           }
           path.pathpoints.forEach((pt, idx) => {
-            ctx.strokeStyle = getSpeedColor(pt.v);
             const x = (pt.x * scale) + (canvas.width / 2);
             const y = canvas.height - (pt.y * scale) - (canvas.height / 2);
             if (idx === 0) ctx.moveTo(x, y);

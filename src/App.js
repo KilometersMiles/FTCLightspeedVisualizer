@@ -20,7 +20,7 @@ function App() {
     const [showSpeedGradient, setShowSpeedGradient] = useState(false);
 
     const addNotification = (type, title, message, duration = 4000) => {
-        let t = Date.now()
+        let t = Math.random().toString(36).substr(2, 9)
         setNotifications(prev => [...prev, {
             time: t,
             type,
