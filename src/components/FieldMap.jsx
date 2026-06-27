@@ -172,9 +172,11 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     ctx.translate(robot.x * scale, robot.y * scale);
     ctx.rotate((robot.heading * Math.PI / 180) - Math.PI / 2);
 
-    ctx.fillStyle = '#3a86ff';
-    ctx.strokeStyle = '#1a4b9b';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(6, 6, 26, 0.84)';
+    ctx.strokeStyle = '#7dd3fc';
+    ctx.shadowColor = '#7dd3fc';
+    ctx.shadowBlur = 3;
+    ctx.lineWidth = 3.5;
 
     ctx.beginPath();
     ctx.roundRect(
@@ -182,8 +184,9 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       -robotLength / 2,
       robotWidth,
       robotLength,
-      [robotWidth * 0.2]
+      [robotWidth * 0.22]
     );
+
     ctx.fill();
     ctx.stroke();
 
@@ -192,49 +195,60 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     const wheelOffset = 0.75;
     const wheelWidthOffset = 0.85;
 
-    ctx.fillStyle = '#333333';
-    ctx.strokeStyle = '#000000';
+    // ctx.fillStyle = '#333333';
+    // ctx.strokeStyle = '#000000';
+    ctx.shadowBlur = 0;
 
-    // Front left 
-    ctx.fillRect(
-      -robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
-      robotLength / 2 * wheelOffset - wheelLength / 2,
-      wheelWidth,
-      wheelLength
-    );
+    // ctx.fillRect(
+    //   -robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
+    //   robotLength / 2 * wheelOffset - wheelLength / 2,
+    //   wheelWidth,
+    //   wheelLength
+    // );
 
-    // Front right 
-    ctx.fillRect(
-      robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
-      robotLength / 2 * wheelOffset - wheelLength / 2,
-      wheelWidth,
-      wheelLength
-    );
+    // ctx.fillRect(
+    //   robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
+    //   robotLength / 2 * wheelOffset - wheelLength / 2,
+    //   wheelWidth,
+    //   wheelLength
+    // );
 
-    // Rear left 
-    ctx.fillRect(
-      -robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
-      -robotLength / 2 * wheelOffset - wheelLength / 2,
-      wheelWidth,
-      wheelLength
-    );
+    // ctx.fillRect(
+    //   -robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
+    //   -robotLength / 2 * wheelOffset - wheelLength / 2,
+    //   wheelWidth,
+    //   wheelLength
+    // );
 
-    // Rear right 
-    ctx.fillRect(
-      robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
-      -robotLength / 2 * wheelOffset - wheelLength / 2,
-      wheelWidth,
-      wheelLength
-    );
+    // ctx.fillRect(
+    //   robotWidth / 2 * wheelWidthOffset - wheelWidth / 2,
+    //   -robotLength / 2 * wheelOffset - wheelLength / 2,
+    //   wheelWidth,
+    //   wheelLength
+    // );
 
-    ctx.fillStyle = '#ff0000';
+    // ctx.fillStyle = '#ff0000';
+    // ctx.beginPath();
+    // ctx.arc(0, robotLength / 2 * 0.8, robotWidth * 0.1, 0, Math.PI * 2);
+    // ctx.fill();
+
+    //dot
+    ctx.fillStyle = '#7dd3fc';
     ctx.beginPath();
-    ctx.arc(0, robotLength / 2 * 0.8, robotWidth * 0.1, 0, Math.PI * 2);
+    ctx.arc(0, 0, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#00ff00';
+    // arroww
     ctx.beginPath();
-    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, robotLength / 2);
+    ctx.stroke();
+    ctx.shadowBlur=3
+    ctx.beginPath();
+    ctx.moveTo(-robotWidth * 0.14, robotLength / 2 - 2);
+    ctx.lineTo(robotWidth * 0.14, robotLength / 2 - 2);
+    ctx.lineTo(0, robotLength / 2 + robotLength * 0.2); 
+    ctx.closePath();
     ctx.fill();
 
     ctx.restore();

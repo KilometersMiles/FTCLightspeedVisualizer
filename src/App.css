@@ -724,8 +724,9 @@ button:disabled {
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  color: var(--text-muted);
+  color: var(--accent-blue);
   text-transform: uppercase;
+  margin-right: 10px;
 }
 
 .cyber-switch {
