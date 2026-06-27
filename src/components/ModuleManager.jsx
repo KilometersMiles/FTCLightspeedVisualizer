@@ -3,7 +3,7 @@ import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import { getPredictableColor } from '../utils/colors';
 import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
 
-function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
+function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot, addNotification }) {
   const [saveStatus, setSaveStatus] = useState('saved');
 
   //saves and loads modules
@@ -69,6 +69,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
                   pathsTotal={pathsTotal}
                   setPathsTotal={setPathsTotal}
                   obstacles={obstacles}
+                  addNotification={addNotification}
                 />
               </div>
             ))}
@@ -91,6 +92,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
                   setPathsTotal={setPathsTotal}
                   obstacles={obstacles}
                   robot={robot}
+                  addNotification={addNotification}
                 />
               </div>
             ))}
@@ -101,7 +103,7 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
   );
 }
 
-function Module({ module, modules, setModules, index, addedModules, setAddedModules, added, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot }) {
+function Module({ module, modules, setModules, index, addedModules, setAddedModules, added, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot, addNotification }) {
   const handleAddModule = (newModule) => {
     var moduleID = Math.random().toString(36).substr(2, 9);
 
@@ -130,7 +132,8 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
         headingControlType: "tangential"
       },
       obstacles,
-      robot
+      robot,
+      addNotification
     );
 
     pathPoints.points = pathPoints.points.concat(modulePathPoints.slice(1));
@@ -145,12 +148,16 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
       moduleID: moduleID
     };
 
+    addNotification('success', 'Module added to path', `${newModule.name} was added as a path.`);
+
     setPaths(prev => [...prev, newPath]);
   }
 
   const handleRemoveModule = (index) => {
     setAddedModules(prev => prev.filter((module, i) => i !== index));
     setPaths(prev => prev.filter(path => path.moduleID !== module.moduleID));
+      addNotification('success', 'Module path removed', `The module path was successfully removed.`);
+
   };
 
   const handleDeleteModule = (module) => {
@@ -160,6 +167,7 @@ function Module({ module, modules, setModules, index, addedModules, setAddedModu
       setModules(prev => prev.filter(item => item !== module));
       if (window.electronAPI) {
         window.electronAPI.saveData('modules', modules);
+        addNotification('success', 'Module successfully deleted', `The module was permanetly deleted. No going back...`);
       }
 
     }

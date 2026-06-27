@@ -155,3 +155,13 @@ export const INITIAL_PATHS = [
     ]
   }
 ];
+
+export const DEFAULT_NOTIFICATION = [
+        {
+            time: Date.now(),
+            type: "success" | "error" | "warning" | "loading",
+            title: "Optimization failed" | "Optimization succeded",
+            message: "Could not converge, check constraints",
+            duration: 5000 //ms
+        }
+    ]

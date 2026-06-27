@@ -16,7 +16,7 @@ const updateCheckboxDefaults = (points) => {
   });
 };
 
-function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
+function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
@@ -95,6 +95,7 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
             setPathsTotal={setPathsTotal}
             setModules={setModules}
             modules={modules}
+            addNotification={addNotification}
           />
         </div>
       ))}
@@ -115,7 +116,7 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
   );
 }
 
-function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules }) {
+function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
   const selectOption = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -177,12 +178,17 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
     const controller = new AbortController();
     abortControllers.current[index] = controller;
     try {
+      addNotification('info', 'Optimizing path...', `Running solver parameters for ${path.name}`, 1000);
       console.log("Starting optimization for:", path.name);
       const optimizedPoints = await window.electronAPI.runOptimizer({
         waypoints: path.points,
         obstacles: obstacles,
         attributes: attributes
       }, controller.signal);
+
+      if (optimizedPoints === "Fail. Check conditions") {
+        throw new Error("PATH_IMPOSSIBLE");
+      }
 
       setPaths(prev => {
         const updated = [...prev];
@@ -192,14 +198,25 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         };
         return updated;
       });
+      addNotification("success", "Completed Optimization", path.name + " is now optimized.");
       console.log("Optimization completed for:", path.name);
       console.log(path);
 
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log(`Path ${index} generation canceled.`);
+        addNotification('warning', 'Optimization Canceled', `Process aborted by user. Path ${index} generation canceled`, 3000);
+      } else if (error.message === 'INFEASIBLE_PATH' || error.toString().includes("Fail")) {
+        addNotification(
+          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints.', 5000);
       } else {
         console.error("Optimization failed:", error);
+        addNotification(
+          'error',
+          'Optimization Failed',
+          error.message || 'An unexpected backend issue has occured.',
+          5000
+        );
       }
     } finally {
       setIsLoading(false);
@@ -209,7 +226,7 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
 
   const handleRunThetaStar = () => {
     if (path.points.length === 2) {
-      const newPath = generateOptimalPath(path, obstacles, robot);
+      const newPath = generateOptimalPath(path, obstacles, robot, addNotification);
       setPaths(prev => {
         const updated = [...prev];
         updated[index].points = updateCheckboxDefaults(newPath.points);
@@ -245,6 +262,7 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         points: modulePoints
       }
     }]);
+    addNotification("success", "Module successfully created", `${path.name} was saved as a module.`)
   };
 
   return (

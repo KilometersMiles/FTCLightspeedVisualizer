@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import FieldMap from './components/FieldMap';
 import SideBar from './components/SideBar';
 import AnimationControls from './components/AnimationControls';
+import NotificationManager from './components/NotificationManager';
 import { INITIAL_PATHS, INITIAL_OBSTACLES, INITIAL_MODULES, ROBOT_ATTRIBUTES, INITIAL_ROBOT } from './utils/initialData';
 import './App.css';
 import TopBar from './components/TopBar';
@@ -15,6 +16,25 @@ function App() {
     const [attributes, setAttributes] = useState(ROBOT_ATTRIBUTES)
     const [obstaclesExpanded, setObstaclesExpanded] = useState(false);
     const [modulesExpanded, setModulesExpanded] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+    const addNotification = (type, title, message, duration = 4000) => {
+        let t = Date.now()
+        setNotifications(prev => [...prev, {
+            time: t,
+            type,
+            title,
+            message,
+            duration
+        }]);
+        // setTimeout(() => {
+        //     setNotifications(prevItems => prevItems.filter(item => item.time !== t));
+        // }, duration);
+    };
+
+    const removeNotification = (time) => {
+        setNotifications(prev => prev.filter(item => item.time !== time));
+    };
 
     const [robot, setRobot] = useState(INITIAL_ROBOT);
 
@@ -43,6 +63,11 @@ function App() {
                 fileInputRef={fileInputRef}
             />
             <div className="Main-Content">
+                <NotificationManager
+                    notifications={notifications}
+                    setNotifications={setNotifications}
+                    addNotification={addNotification}
+                />
                 <FieldMap
                     robot={robot}
                     setRobot={setRobot}
@@ -74,6 +99,7 @@ function App() {
                     abortControllers={abortControllers}
                     pathsTotal={pathsTotal}
                     setPathsTotal={setPathsTotal}
+                    addNotification={addNotification}
                 />
             </div>
             <div className="Bottom-playback-bar">
