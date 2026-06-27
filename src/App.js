@@ -17,6 +17,7 @@ function App() {
     const [obstaclesExpanded, setObstaclesExpanded] = useState(false);
     const [modulesExpanded, setModulesExpanded] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [showSpeedGradient, setShowSpeedGradient] = useState(false);
 
     const addNotification = (type, title, message, duration = 4000) => {
         let t = Date.now()
@@ -61,6 +62,8 @@ function App() {
                 obstacles={obstacles}
                 setObstacles={setObstacles}
                 fileInputRef={fileInputRef}
+                showSpeedGradient={showSpeedGradient}
+                setShowSpeedGradient={setShowSpeedGradient}
             />
             <div className="Main-Content">
                 <NotificationManager
@@ -77,6 +80,7 @@ function App() {
                     setObstacles={setObstacles}
                     showObstacles={obstaclesExpanded}
                     abortControllers={abortControllers}
+                    showSpeedGradient={showSpeedGradient}
                 />
                 <SideBar
                     attributes={attributes}

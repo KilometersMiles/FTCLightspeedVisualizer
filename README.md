@@ -19,6 +19,8 @@ There are many options to create your paths.
 #### Optimal Generation
 Clicking the ![Zap](images/zap.png) button will allow you to create the mathematically optimal path that goes through your waypoints given your constraints.
 
+Configure settings for your robot by clicking on the settings button in the top right. You can also visualize the velocity of the robot along the path by toggling the Show Velocity toggle.
+
 #### Obstacles
 You can create any number of polygonal obstacles in the obstacle section. They are hidden from view unless the obstacles section is expanded. THESE OBSTACLES ONLY APPLY TO A*. The optimal path generation will go through them if given the opportunity, but the A* is intended for finding good waypoints to avoid them. Use this obstacle avoidance by clicking the ![Route](images/route.png) button.
 

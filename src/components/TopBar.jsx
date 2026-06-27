@@ -4,7 +4,7 @@ import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileH
 import AttributesInputField from './AttributesInputField';
 import Logo from "../assets/favicon-228.png";
 
-function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef }) {
+function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef, showSpeedGradient, setShowSpeedGradient }) {
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const configRef = useRef(null);
 
@@ -67,6 +67,16 @@ function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, o
                     {isConfigOpen && (
                         <div className="Config-dropdown">
                             <AttributesInputField attributes={attributes} setAttributes={setAttributes} robot={robot} setRobot={setRobot} />
+                            <div className='DropdownDivider' />
+                            <span className="Setting-label">Show Path Velocity</span>
+                                <label className="cyber-switch">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={showSpeedGradient}
+                                        onChange={(e) => setShowSpeedGradient(e.target.checked)}
+                                    />
+                                    <span className="cyber-slider" />
+                                </label>
                         </div>
                     )}
                 </div>
