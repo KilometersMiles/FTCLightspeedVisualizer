@@ -5,7 +5,7 @@ This is a path visualizer and planner for FTC mecanum robots built with electron
 This was made in conjunction with a (not yet ready for release) path following algorithm with the intent of making FTC autonomouses the best possible.
 
 ## How to use
-Go to the releases tab and download the latest version. Unfortunately, the app will only run on windows. 
+Go to the releases tab and download the latest version. Unfortunately, the app is only built for Windows for now. 
 
 ### Featues & Buttons
 #### Paths
@@ -13,8 +13,8 @@ There are many options to create your paths.
 - Control position and heading with the input fields or by dragging on the field.
 - Use the Stop checkbox to tell the optimizer to stop at that point.
 - Use the Lock H checkbox to tell the optimizer to keep a specified heading at that point.
-- Add or delete any number of waypoints on each path using the xxxx or xxxx buttons
-- Add or delete any number of paths using the ![Plus](images/plus.png) or ![Trash](images/trash-2.png) buttons
+- Add or delete any number of waypoints on each path using the ![Plus](images/plus.png) or ![Trash](images/trash-2.png) buttons.
+- Add or delete any number of paths using the ![Plus](images/plus.png) or ![Trash](images/trash-2.png) buttons.
 
 #### Optimal Generation
 Clicking the ![Zap](images/zap.png) button will allow you to create the mathematically optimal path that goes through your waypoints given your constraints.
