@@ -194,7 +194,7 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         minY = boundaryRect.minY + robotRadius;
       }
       const optimizedPoints = await window.electronAPI.runOptimizer({
-        waypoints: path.points,
+        waypoints: updateCheckboxDefaults(path.points),
         obstacles: obstacles,
         attributes: attributes,
         boundary: {
@@ -476,7 +476,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex] = {
                   ...updated[pathIndex].points[pointIndex],
-                  constrainHeading: e.target.checked,
+                  stop: e.target.checked,
                   userEditedStop: e.target.checked
                 };
                 updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
@@ -493,7 +493,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex] = {
                   ...updated[pathIndex].points[pointIndex],
-                  stop: e.target.checked,
+                  constrainHeading: e.target.checked,
                   userEditedConstrain: e.target.checked
                 };
                 updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
