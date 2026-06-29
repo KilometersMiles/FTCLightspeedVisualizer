@@ -12,5 +12,5 @@
 10. Show whether or not path is optimized, can be hard to tell --- check
 11. Helpful error messages --- check
 12. Constrain generation to within the field
-13. Help/docs menu option
-14. Show time and paths on animation bar
+13. Help/docs menu option --- check
+14. Show time and paths on animation bar --- check

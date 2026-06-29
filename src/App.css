@@ -268,6 +268,22 @@ h5 {
   animation: fadeInConfig 0.15s ease-out;
 }
 
+.Help-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 70vh;
+  height: 75vh;
+  background: #111116; /* Solid dark background to prevent bleed-through */
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 100; /* Ensure it floats over the canvas and sidebar */
+  animation: fadeInConfig 0.15s ease-out;
+}
+
+
 /* Style adjustment inside the dropdown to make it blend well */
 .Config-dropdown .Input-field {
   background: transparent;
@@ -286,6 +302,11 @@ h5 {
 
 /* Make active button highlight state look smooth */
 .Config-container button.active {
+  background: rgba(125, 211, 252, 0.15);
+  color: var(--accent-blue);
+  border-color: rgba(125, 211, 252, 0.3);
+}
+.Help-container button.active {
   background: rgba(125, 211, 252, 0.15);
   color: var(--accent-blue);
   border-color: rgba(125, 211, 252, 0.3);

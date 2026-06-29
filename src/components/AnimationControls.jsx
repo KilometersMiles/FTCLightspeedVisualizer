@@ -289,7 +289,7 @@ function AnimationControls({
               title={`Path "${paths[idx]?.name || idx}" finishes`}
               style={{
                 position: 'absolute',
-                left: `${percentage-1}%`,
+                left: `${percentage}%`,
                 top: '50%',
                 width: '12px',
                 height: '12px',
