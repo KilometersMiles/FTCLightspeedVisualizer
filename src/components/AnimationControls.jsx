@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ROBOT_ATTRIBUTES } from '../utils/initialData';
-
+import { getPredictableColor } from '../utils/colors';
 function AnimationControls({
   attributes,
   animationState,
@@ -11,7 +11,7 @@ function AnimationControls({
 }) {
   const animationRef = useRef(null);
   const prevTimeRef = useRef(0);
-
+  const [allPathsTime, setAllPathsTime] = useState(0);
   // Calculate path durations based on length
   const calculatePathDurations = useCallback((paths) => {
     const timeline = [];
@@ -24,6 +24,7 @@ function AnimationControls({
       };
     }
 
+    let endTimestampsAndColors = [];
     // First calculate all path lengths
     paths.forEach(path => {
       const pointArray = path.points;
@@ -60,8 +61,7 @@ function AnimationControls({
           timeDecel = accelTime;
           timeCruise = cruiseTime;
         }
-        const timeSteps = 30*path.points.length; //matches optimizer
-        const countingTime = 0;
+        const timeSteps = 30 * path.points.length; //matches optimizer
         for (let j = 0; j <= timeSteps; j++) {
           var timeTraveled = (j / timeSteps) * pathTime;
           console.log(timeTraveled);
@@ -99,40 +99,45 @@ function AnimationControls({
             v: robot.speed
           });
         }
-        console.log(timeline);
         cumulativeTime += pathTime;
-
       } else {
-        // has been optimized, so use velocities to calculate time
+        // has been optimized, so use timestamps
         let pathTime = 0;
         const points = path.pathpoints || [];
 
         if (points.length === 0) {
           return;
         }
-        timeline.push({
-          globalTime: cumulativeTime,
-          x: points[0].x,
-          y: points[0].y,
-          h: points[0].h || points[0].theta || 0,
-          v: points[0].v || robot.speed
-        });
-        for (let i = 1; i < points.length; i++) {
-          const dx = points[i].x - points[i - 1].x;
-          const dy = points[i].y - points[i - 1].y;
-          const segmentLength = Math.sqrt(dx * dx + dy * dy);
-          const velocity = Math.max(points[i].v * 1000 /*convert to mm/s from m/s*/ || 0, 10.0); // min speed to prevent infinite time on beginnings of paths
-          pathTime += segmentLength / velocity;
+        // timeline.push({
+        //   globalTime: cumulativeTime,
+        //   x: points[0].x,
+        //   y: points[0].y,
+        //   h: points[0].h || points[0].theta || 0,
+        //   v: points[0].v || robot.speed
+        // });
+        for (let i = 0; i < points.length; i++) {
+          // const dx = points[i].x - points[i - 1].x;
+          // const dy = points[i].y - points[i - 1].y;
+          // const segmentLength = Math.sqrt(dx * dx + dy * dy);
+          // const velocity = Math.max(points[i].v * 1000 /*convert to mm/s from m/s*/ || 0, 10.0); // min speed to prevent infinite time on beginnings of paths
+          // pathTime += segmentLength / velocity;
 
-          timeline.push({ globalTime: cumulativeTime + pathTime, x: points[i].x, y: points[i].y, h: points[i].h || 0, v: velocity });
+
+          timeline.push({ globalTime: cumulativeTime + points[i].t, x: points[i].x, y: points[i].y, h: points[i].h || 0, v: Math.sqrt(points[i].v_bx ** 2 + points[i].v_by ** 2) });
         }
+        pathTime = points[points.length - 1].t
         cumulativeTime += pathTime;
       }
+      endTimestampsAndColors.push({
+        time: cumulativeTime,
+        color: path.color
+      });
     });
 
     return {
       timeline: timeline,
-      totalTime: cumulativeTime
+      totalTime: cumulativeTime,
+      pathEndMarkers: endTimestampsAndColors
     };
   }, []);
 
@@ -174,8 +179,8 @@ function AnimationControls({
       return;
     }
 
-    const { timeline, totalTime } = calculatePathDurations(paths);
-
+    // const { timeline, totalTime } = calculatePathDurations(paths);
+    setAllPathsTime(totalTime);
     let lastTickTime = performance.now();
 
     const loop = (timestamp) => {
@@ -237,13 +242,17 @@ function AnimationControls({
     });
   };
 
+  const { timeline, totalTime, pathEndMarkers } = useMemo(() => {
+    return calculatePathDurations(paths) || { timeline: 0, totalTime: 0, pathEndMarkers: {} };
+  }, [paths, calculatePathDurations]);
+
+
   return (
     <div className="animation-controls">
-      <button onClick={togglePlayPause}>
+      <button onClick={togglePlayPause} style={{width: '80px'}}>
         {animationState.isPlaying ? 'Pause' : 'Play'}
       </button>
-
-      <input
+      <div style={{ flexGrow: 1, position: 'relative', display: 'flex', alignItems: 'center', margin: '0 10px' }}>      <input
         type="range"
         min="0"
         max="1"
@@ -252,7 +261,8 @@ function AnimationControls({
         value={animationState.totalProgress}
         onChange={(e) => {
           const val = parseFloat(e.target.value);
-          const { timeline, totalTime } = calculatePathDurations(paths);
+          // const { timeline, totalTime } = calculatePathDurations(paths);
+          setAllPathsTime(prev => totalTime);
           const sampledFrame = getStateAtTime(timeline, val * totalTime);
 
           setAnimationState(prev => ({
@@ -270,8 +280,33 @@ function AnimationControls({
             }));
           }
         }} />
+        {totalTime > 0 && pathEndMarkers != null && pathEndMarkers.map((marker, idx) => {
+          const percentage = (marker.time / totalTime) * 100;
+
+          return (
+            <div
+              key={idx}
+              title={`Path "${paths[idx]?.name || idx}" finishes`}
+              style={{
+                position: 'absolute',
+                left: `${percentage-1}%`,
+                top: '50%',
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: marker.color,
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                boxShadow: `0px 0px 10px ${marker.color}`,
+                zIndex: 2
+              }}
+            />
+          );
+        })}
+      </div>
       <span>
-        {Math.round(animationState.totalProgress * 100)}%
+        {/* {Math.round(animationState.totalProgress * 100)}% */}
+        {(animationState.totalProgress * allPathsTime).toFixed(1)}/{(allPathsTime).toFixed(1)}s
       </span>
 
     </div>
