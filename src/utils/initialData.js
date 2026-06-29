@@ -156,6 +156,14 @@ export const INITIAL_PATHS = [
   }
 ];
 
+export const INITIAL_BOUNDARY = {
+  isVisible: false,
+  maxX: 1775,
+  maxY: 1775,
+  minX: -1775,
+  minY: -1775
+}
+
 export const DEFAULT_NOTIFICATION = [
         {
             time: Date.now(),

@@ -16,7 +16,7 @@ const updateCheckboxDefaults = (points) => {
   });
 };
 
-function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
+function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
@@ -96,6 +96,8 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
             setModules={setModules}
             modules={modules}
             addNotification={addNotification}
+            boundaryRect={boundaryRect}
+            keepInRect={keepInRect}
           />
         </div>
       ))}
@@ -116,7 +118,7 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
   );
 }
 
-function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
+function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
   const selectOption = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -180,15 +182,28 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
     try {
       addNotification('info', 'Optimizing path...', `Running solver parameters for ${path.name}`, 1000);
       console.log("Starting optimization for:", path.name);
+      let robotRadius = Math.sqrt(((robot.length) / 2) ** 2 + ((robot.width) / 2) ** 2);
+      let maxX = 20000000; //probably wont break if so big...
+      let minX = -20000000;
+      let maxY = 20000000;
+      let minY = -20000000;
+      if (keepInRect) {
+        maxX = boundaryRect.maxX - robotRadius;
+        minX = boundaryRect.minX + robotRadius;
+        maxY = boundaryRect.maxY - robotRadius;
+        minY = boundaryRect.minY + robotRadius;
+      }
       const optimizedPoints = await window.electronAPI.runOptimizer({
         waypoints: path.points,
         obstacles: obstacles,
-        attributes: attributes
+        attributes: attributes,
+        boundary: {
+          maxX: maxX,
+          minX: minX,
+          maxY: maxY,
+          minY: minY
+        }
       }, controller.signal);
-
-      if (optimizedPoints === "Fail. Check conditions") {
-        throw new Error("PATH_IMPOSSIBLE");
-      }
 
       setPaths(prev => {
         const updated = [...prev];
@@ -206,9 +221,9 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
       if (error.name === 'AbortError') {
         console.log(`Path ${index} generation canceled.`);
         addNotification('warning', 'Optimization Canceled', `Process aborted by user. Path ${index} generation canceled`, 3000);
-      } else if (error.message === 'INFEASIBLE_PATH' || error.toString().includes("Fail")) {
+      } else if (error.message.toString().includes("1")) {
         addNotification(
-          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints.', 5000);
+          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints or boundaries.', 5000);
       } else {
         console.error("Optimization failed:", error);
         addNotification(
