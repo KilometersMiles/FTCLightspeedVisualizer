@@ -190,7 +190,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     const robotLength = robot.length * scale; // Convert to pixels
 
     ctx.translate(robot.x * scale, robot.y * scale);
-    ctx.rotate((robot.heading * Math.PI / 180) - Math.PI / 2);
+    ctx.rotate((robot.heading * Math.PI / 180) + Math.PI / 2);
 
     ctx.fillStyle = 'rgba(6, 6, 26, 0.84)';
     ctx.strokeStyle = '#7dd3fc';

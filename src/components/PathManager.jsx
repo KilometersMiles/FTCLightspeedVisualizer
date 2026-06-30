@@ -180,8 +180,9 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
     const controller = new AbortController();
     abortControllers.current[index] = controller;
     try {
-      addNotification('info', 'Optimizing path...', `Running solver parameters for ${path.name}`, 1000);
-      console.log("Starting optimization for:", path.name);
+      const pathName = path.name;
+      addNotification('info', 'Optimizing path...', `Running solver parameters for ${pathName}`, 1000);
+      console.log("Starting optimization for:", pathName);
       let robotRadius = Math.sqrt(((robot.length) / 2) ** 2 + ((robot.width) / 2) ** 2);
       let maxX = 20000000; //probably wont break if so big...
       let minX = -20000000;
@@ -205,22 +206,41 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         }
       }, controller.signal);
 
+      const abort = new Promise((_, reject) => {
+        controller.signal.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', "Aborted error oof"))
+        });
+      });
+
+      const safeOptimizedPoints = await Promise.race([optimizedPoints, abort]);
+
+      let optimizedSuccess = true;
       setPaths(prev => {
+        const optimizedPathIndexSafe = prev.findIndex(p => p.name === pathName);
+        if (optimizedPathIndexSafe === -1) {
+          addNotification('warning', 'Optimization Canceled', `Path deleted probably. ${pathName} generation canceled`, 3000);
+          optimizedSuccess = false;
+          console.log(optimizedSuccess);
+          return prev;
+        }
         const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          pathpoints: optimizedPoints // Pathpoints is the curvy points
+        updated[optimizedPathIndexSafe] = {
+          ...updated[optimizedPathIndexSafe],
+          pathpoints: safeOptimizedPoints
         };
         return updated;
       });
-      addNotification("success", "Completed Optimization", path.name + " is now optimized.");
+      if (optimizedSuccess) {
+        console.log(optimizedSuccess);
+        addNotification("success", "Completed Optimization", path.name + " is now optimized.");
+      }
       console.log("Optimization completed for:", path.name);
       console.log(path);
 
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error.name === 'Aborted error oof') {
         console.log(`Path ${index} generation canceled.`);
-        addNotification('warning', 'Optimization Canceled', `Process aborted by user. Path ${index} generation canceled`, 3000);
+        addNotification('warning', 'Optimization Canceled', `Aborted by user. ${pathName} generation canceled`, 3000);
       } else if (error.message.toString().includes("1")) {
         addNotification(
           'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints or boundaries.', 5000);
@@ -339,6 +359,9 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         </button>
         <button
           onClick={() => {
+            if (abortControllers.current[index]) {
+              abortControllers.current[index].abort();
+            }
             setPaths(prev => {
               const updated = [...prev];
               updated.splice(index, 1);
