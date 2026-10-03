@@ -237,6 +237,16 @@ h5 {
   transition: background 0.2s;
 }
 
+.module-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.module-list-header h6 {
+  margin: 0;
+}
+
 .module-header:hover, .obstacle-header:hover {
   background: rgba(125, 211, 252, 0.08);
   color: var(--accent-blue);

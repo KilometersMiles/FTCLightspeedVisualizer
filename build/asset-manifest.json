@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "./static/css/main.10031271.css",
-    "main.js": "./static/js/main.8f3a5dbc.js",
+    "main.css": "./static/css/main.71576ddf.css",
+    "main.js": "./static/js/main.9247829e.js",
     "static/js/453.e2084589.chunk.js": "./static/js/453.e2084589.chunk.js",
     "static/media/BiobuzzField.jpg": "./static/media/BiobuzzField.5eec0fc08ba2a3a00226.jpg",
     "static/media/favicon-228.png": "./static/media/favicon-228.294ace02fec33408ec7b.png",
     "index.html": "./index.html",
-    "main.10031271.css.map": "./static/css/main.10031271.css.map",
-    "main.8f3a5dbc.js.map": "./static/js/main.8f3a5dbc.js.map",
+    "main.71576ddf.css.map": "./static/css/main.71576ddf.css.map",
+    "main.9247829e.js.map": "./static/js/main.9247829e.js.map",
     "453.e2084589.chunk.js.map": "./static/js/453.e2084589.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.10031271.css",
-    "static/js/main.8f3a5dbc.js"
+    "static/css/main.71576ddf.css",
+    "static/js/main.9247829e.js"
   ]
 }

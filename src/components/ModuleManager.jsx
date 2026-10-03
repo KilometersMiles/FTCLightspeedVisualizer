@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { generateOptimalPath } from '../utils/pathfinding/ThetaStar';
 import { getPredictableColor } from '../utils/colors';
-import { Plus, Minus, Trash2, Box, Zap, HelpCircle } from 'lucide-react';
+import { INITIAL_MODULES } from '../utils/initialData';
+import { Plus, Minus, Trash2, RotateCcw } from 'lucide-react';
 
 function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpanded, addedModules, setAddedModules, paths, setPaths, pathsTotal, setPathsTotal, obstacles, robot, addNotification }) {
   const [saveStatus, setSaveStatus] = useState('saved');
@@ -40,6 +41,24 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
     }
   };
 
+  const handleResetModules = () => {
+    const userConfirmed = window.confirm(
+      'Reset all modules to the default modules? This will permanently delete your custom modules and cannot be undone.'
+    );
+
+    if (!userConfirmed) return;
+
+    const defaultModules = INITIAL_MODULES.map(module => ({
+      ...module,
+      path: module.path ? { ...module.path, points: module.path.points?.map(point => ({ ...point })) } : module.path
+    }));
+    setModules(defaultModules);
+    if (window.electronAPI) {
+      window.electronAPI.saveData('modules', defaultModules);
+    }
+    addNotification('success', 'Modules reset', 'The default modules have been restored.');
+  };
+
   return (
     <div className="module-manager">
       <div className="module-header" onClick={() => setModulesExpanded(!modulesExpanded)}>
@@ -75,7 +94,12 @@ function ModuleManager({ modules, setModules, modulesExpanded, setModulesExpande
             ))}
           </div>
           <div className="module-list-container">
-            <h6>Available Modules</h6>
+            <div className="module-list-header">
+              <h6>Available Modules</h6>
+              <button onClick={handleResetModules} title="Reset modules to defaults">
+                <RotateCcw size={14} />
+              </button>
+            </div>
             {modules.map((module, index) => (
               <div className="module-container" key={index}>
                 <Module
