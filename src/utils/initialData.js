@@ -30,88 +30,86 @@ export const INITIAL_ROBOT = {
 
 export const INITIAL_MODULES = [
   {
-    name: "Pick Up Stack 1 RED",
+    name: "Park RED",
     path: {
       name: "Stack 1 Approach",
       startHeading: 180,
       endHeading: 180,
       headingControlType: "constant",
       points: [
-        { x: -300, y: -600 },
-        { x: -300, y: -750 },
-        { x: -300, y: -1200 }
+        { x: -880, y: -1500 },
       ]
     }
   },
-  {
-    name: "Pick Up Stack 2 RED",
-    path: {
-      name: "Stack 2 Approach",
-      startHeading: 180,
-      endHeading: 180,
-      headingControlType: "constant",
-      points: [
-        { x: 300, y: -600 },
-        { x: 300, y: -750 },
-        { x: 300, y: -1200 }
-      ]
-    }
-  },
-  {
-    name: "Pick Up Stack 3 RED",
-    path: {
-      name: "Stack 3 Approach",
-      startHeading: 180,
-      endHeading: 180,
-      headingControlType: "constant",
-      points: [
-        { x: 900, y: -600 },
-        { x: 900, y: -750 },
-        { x: 900, y: -1200 }
-      ]
-    }
-  },  {
-    name: "Pick Up Stack 1 BLUE",
-    path: {
-      name: "Stack 1 Approach",
-      startHeading: 180,
-      endHeading: 180,
-      headingControlType: "constant",
-      points: [
-        { x: -300, y: 600 },
-        { x: -300, y: 750 },
-        { x: -300, y: 1200 }
-      ]
-    }
-  },
-  {
-    name: "Pick Up Stack 2 BLUE",
-    path: {
-      name: "Stack 2 Approach",
-      startHeading: 180,
-      endHeading: 180,
-      headingControlType: "constant",
-      points: [
-        { x: 300, y: 600 },
-        { x: 300, y: 750 },
-        { x: 300, y: 1200 }
-      ]
-    }
-  },
-  {
-    name: "Pick Up Stack 3 BLUE",
-    path: {
-      name: "Stack 3 Approach",
-      startHeading: 180,
-      endHeading: 180,
-      headingControlType: "constant",
-      points: [
-        { x: 900, y: 600 },
-        { x: 900, y: 750 },
-        { x: 900, y: 1200 }
-      ]
-    }
-  },
+  // {
+  //   name: "Pick Up Stack 2 RED",
+  //   path: {
+  //     name: "Stack 2 Approach",
+  //     startHeading: 180,
+  //     endHeading: 180,
+  //     headingControlType: "constant",
+  //     points: [
+  //       { x: 300, y: -600 },
+  //       { x: 300, y: -750 },
+  //       { x: 300, y: -1200 }
+  //     ]
+  //   }
+  // },
+  // {
+  //   name: "Pick Up Stack 3 RED",
+  //   path: {
+  //     name: "Stack 3 Approach",
+  //     startHeading: 180,
+  //     endHeading: 180,
+  //     headingControlType: "constant",
+  //     points: [
+  //       { x: 900, y: -600 },
+  //       { x: 900, y: -750 },
+  //       { x: 900, y: -1200 }
+  //     ]
+  //   }
+  // },  {
+  //   name: "Pick Up Stack 1 BLUE",
+  //   path: {
+  //     name: "Stack 1 Approach",
+  //     startHeading: 180,
+  //     endHeading: 180,
+  //     headingControlType: "constant",
+  //     points: [
+  //       { x: -300, y: 600 },
+  //       { x: -300, y: 750 },
+  //       { x: -300, y: 1200 }
+  //     ]
+  //   }
+  // },
+  // {
+  //   name: "Pick Up Stack 2 BLUE",
+  //   path: {
+  //     name: "Stack 2 Approach",
+  //     startHeading: 180,
+  //     endHeading: 180,
+  //     headingControlType: "constant",
+  //     points: [
+  //       { x: 300, y: 600 },
+  //       { x: 300, y: 750 },
+  //       { x: 300, y: 1200 }
+  //     ]
+  //   }
+  // },
+  // {
+  //   name: "Pick Up Stack 3 BLUE",
+  //   path: {
+  //     name: "Stack 3 Approach",
+  //     startHeading: 180,
+  //     endHeading: 180,
+  //     headingControlType: "constant",
+  //     points: [
+  //       { x: 900, y: 600 },
+  //       { x: 900, y: 750 },
+  //       { x: 900, y: 1200 }
+  //     ]
+  //   }
+  // },
   //these ones rely on function excecution and cannot be saved or run as is. do later
   // {
   //   name: "Shoot 3 Balls",
@@ -150,23 +148,21 @@ export const INITIAL_MODULES = [
 
 export const INITIAL_OBSTACLES = [
   {
-    name: "Red Goal",
+    name: "Blue Hive Support",
     points: [
-      { x: -1125, y: 1625 }, // first point
-      { x: -1770, y: 1125 }, // second point
-      { x: -1770, y: 1770 },  // etc
-      { x: 100, y: 1770 },
-      { x: 100, y: 1625 }
+      { x: -500, y: 550 }, // first point
+      { x: -500, y: 650 }, // second point
+      { x: 500, y: 650 },  // etc
+      { x: 500, y: 550 },
     ]
   },
   {
-    name: "Blue Goal",
+    name: "Red Hive Support",
     points: [
-      { x: -1125, y: -1625 },
-      { x: -1770, y: -1125 },
-      { x: -1770, y: -1770 },
-      { x: 100, y: -1770 },
-      { x: 100, y: -1625 }
+      { x: -500, y: -550 }, 
+      { x: -500, y: -650 },
+      { x: 500, y: -650 }, 
+      { x: 500, y: -550 },
     ]
   }
 ];

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSpeedColor } from '../utils/colors';
-import field from '../assets/DecodeField.jpg';
+import field from '../assets/BiobuzzField.jpg';
 
 function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, abortControllers, showSpeedGradient, boundaryRect, setBoundaryRect, robotMotionHandlerRef }) {
   const canvasRef = useRef(null);
@@ -460,13 +460,14 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
 
   return (
     <div className="Field-map">
-      <img src={field} alt="Field Map" className="Field-image" />
+      <img src={field} alt="Into the Deep field map" className="Field-image" />
       <canvas className="Field-canvas" id="fieldCanvas" ref={canvasRef} />
       <canvas
         className="Points-canvas"
         ref={pointsCanvasRef}
         onMouseDown={handleMouseDown}
       />
+      <span className="Field-attribution">Field image: Team Juice 16236</span>
     </div>
   );
 }
