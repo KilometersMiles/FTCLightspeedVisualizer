@@ -7,11 +7,12 @@ function AnimationControls({
   setAnimationState,
   paths,
   robot,
-  setRobot
+  setRobot,
+  robotMotionHandlerRef
 }) {
   const animationRef = useRef(null);
   const prevTimeRef = useRef(0);
-  const [allPathsTime, setAllPathsTime] = useState(0);
+  const [displayProgress, setDisplayProgress] = useState(animationState.totalProgress);
   // Calculate path durations based on length
   const calculatePathDurations = useCallback((paths) => {
     const timeline = [];
@@ -138,7 +139,7 @@ function AnimationControls({
       totalTime: cumulativeTime,
       pathEndMarkers: endTimestampsAndColors
     };
-  }, []);
+  }, [robot.speed]);
 
   const shortestAngle = (from, to) => {
     const difference = to - from;
@@ -178,16 +179,14 @@ function AnimationControls({
       return;
     }
 
-    // const { timeline, totalTime } = calculatePathDurations(paths);
-    setAllPathsTime(totalTime);
     let lastTickTime = performance.now();
 
     const loop = (timestamp) => {
       const now = performance.now();
       const deltaTime = (now - lastTickTime) / 1000; // Time elapsed in seconds
       lastTickTime = now;
-      setAnimationState((prev) => {
-        let nextProgress = prev.totalProgress + (deltaTime / totalTime);
+      setDisplayProgress((prevProgress) => {
+        const nextProgress = prevProgress + (deltaTime / totalTime);
 
         if (nextProgress >= 1) {
           cancelAnimationFrame(animationRef.current);
@@ -197,23 +196,23 @@ function AnimationControls({
             setRobot(r => ({ ...r, x: lastFrame.x, y: lastFrame.y, heading: lastFrame.h }));
           }
 
-          return { ...prev, isPlaying: false, totalProgress: 1 };
+          setAnimationState(prev => ({ ...prev, isPlaying: false, totalProgress: 1 }));
+          return 1;
         }
 
         const currentTimeInstance = nextProgress * totalTime;
         const sampledFrame = getStateAtTime(timeline, currentTimeInstance);
 
         if (sampledFrame) {
-          setRobot((prevRobot) => ({
-            ...prevRobot,
+          robotMotionHandlerRef.current?.({
             x: sampledFrame.x,
             y: sampledFrame.y,
             heading: sampledFrame.h,
             currentVelocity: sampledFrame.v
-          }));
+          });
         }
 
-        return { ...prev, totalProgress: nextProgress };
+        return nextProgress;
       });
 
       animationRef.current = requestAnimationFrame(loop);
@@ -224,19 +223,27 @@ function AnimationControls({
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [animationState.isPlaying, paths, calculatePathDurations, getStateAtTime, setAnimationState, setRobot]);
+  }, [animationState.isPlaying, paths, calculatePathDurations, getStateAtTime, setAnimationState, setRobot, robotMotionHandlerRef]);
+
+  useEffect(() => {
+    if (!animationState.isPlaying) {
+      setDisplayProgress(animationState.totalProgress);
+    }
+  }, [animationState.isPlaying, animationState.totalProgress]);
 
   const togglePlayPause = () => {
-    console.log(paths);
+    const nextIsPlaying = !animationState.isPlaying;
+    if (nextIsPlaying && displayProgress >= 1) {
+      setDisplayProgress(0);
+    }
     setAnimationState((prev) => {
-      const isNowPlaying = !prev.isPlaying;
-      if (isNowPlaying) {
+      if (nextIsPlaying) {
         prevTimeRef.current = null;
       }
       return {
         ...prev,
-        isPlaying: isNowPlaying,
-        totalProgress: prev.totalProgress >= 1 ? 0 : prev.totalProgress
+        isPlaying: nextIsPlaying,
+        totalProgress: nextIsPlaying && prev.totalProgress >= 1 ? 0 : prev.totalProgress
       };
     });
   };
@@ -257,11 +264,11 @@ function AnimationControls({
         max="1"
         step="0.0001"
         style={{ flexGrow: 1, curosor: 'pointer' }}
-        value={animationState.totalProgress}
+        value={displayProgress}
         onChange={(e) => {
           const val = parseFloat(e.target.value);
           // const { timeline, totalTime } = calculatePathDurations(paths);
-          setAllPathsTime(prev => totalTime);
+          setDisplayProgress(val);
           const sampledFrame = getStateAtTime(timeline, val * totalTime);
 
           setAnimationState(prev => ({
@@ -305,7 +312,7 @@ function AnimationControls({
       </div>
       <span>
         {/* {Math.round(animationState.totalProgress * 100)}% */}
-        {(animationState.totalProgress * allPathsTime).toFixed(1)}/{(allPathsTime).toFixed(1)}s
+        {(displayProgress * totalTime).toFixed(1)}/{(totalTime).toFixed(1)}s
       </span>
 
     </div>

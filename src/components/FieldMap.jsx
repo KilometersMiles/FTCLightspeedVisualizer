@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getSpeedColor } from '../utils/colors';
 import field from '../assets/DecodeField.jpg';
 
-function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, abortControllers, showSpeedGradient, boundaryRect, setBoundaryRect }) {
+function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, abortControllers, showSpeedGradient, boundaryRect, setBoundaryRect, robotMotionHandlerRef }) {
   const canvasRef = useRef(null);
   const pointsCanvasRef = useRef(null);
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -16,24 +16,65 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
   useEffect(() => {
     const canvas = canvasRef.current;
     const pointsCanvas = pointsCanvasRef.current;
-    if (!canvas || !pointsCanvas) return;
+    const container = canvas?.parentElement;
+    if (!canvas || !pointsCanvas || !container) return;
 
-    // Set both canvases to same size
-    const container = canvas.parentElement;
-    const displayWidth = container.clientWidth;
-    const displayHeight = container.clientHeight;
+    const resizeCanvases = () => {
+      const displayWidth = container.clientWidth;
+      const displayHeight = container.clientHeight;
+      if (canvas.width === displayWidth && canvas.height === displayHeight) return;
 
-    canvas.width = pointsCanvas.width = displayWidth;
-    canvas.height = pointsCanvas.height = displayHeight;
+      canvas.width = pointsCanvas.width = displayWidth;
+      canvas.height = pointsCanvas.height = displayHeight;
+      drawPoints(pointsCanvas.getContext('2d'), pointsCanvas);
+    };
+
+    resizeCanvases();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', resizeCanvases);
+      return () => window.removeEventListener('resize', resizeCanvases);
+    }
+
+    const observer = new ResizeObserver(resizeCanvases);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const pointsCtx = pointsCanvas.getContext('2d');
-
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawRobot(ctx, canvas, robot);
     drawBoundaryRect(ctx, canvas);
-    drawPoints(pointsCtx, pointsCanvas);
     drawObstacles(ctx, canvas);
-  }, [robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, showSpeedGradient, boundaryRect]);
+  }, [robot, obstacles, showObstacles, boundaryRect]);
+
+  useEffect(() => {
+    if (!robotMotionHandlerRef) return undefined;
+
+    robotMotionHandlerRef.current = (position) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawRobot(ctx, canvas, { ...robot, ...position });
+      drawBoundaryRect(ctx, canvas);
+      drawObstacles(ctx, canvas);
+    };
+
+    return () => {
+      robotMotionHandlerRef.current = null;
+    };
+  }, [robotMotionHandlerRef, robot, obstacles, showObstacles, boundaryRect]);
+
+  useEffect(() => {
+    const canvas = pointsCanvasRef.current;
+    if (!canvas) return;
+    drawPoints(canvas.getContext('2d'), canvas);
+  }, [paths, showSpeedGradient]);
 
 
   const drawObstacles = (ctx, canvas) => {
@@ -63,35 +104,15 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
-    });
 
-    obstacles.forEach((obstacle, obsIndex) => {
-      if (obstacle.points.length < 2) return;
-
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-      ctx.strokeStyle = '#FF0000';
-      ctx.lineWidth = 2;
-
-      ctx.beginPath();
-      obstacle.points.forEach((point, pointIndex) => {
+      ctx.fillStyle = '#FF0000';
+      obstacle.points.forEach(point => {
         const x = (point.x * scale) + (canvas.width / 2);
         const y = canvas.height - (point.y * scale) - (canvas.height / 2);
-
-        if (pointIndex === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-
-        ctx.fillStyle = '#FF0000';
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, Math.PI * 2);
         ctx.fill();
       });
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-      ctx.fill();
-      ctx.stroke();
     });
 
   };
@@ -124,7 +145,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       const path = paths[i];
       const pathColor = path.color || '#00FF00';
 
-      const canGraphColor = path.pathpoints[0].v !== undefined && (path.pathpoints.length > path.points.length * 2);
+      const canGraphColor = path.pathpoints?.[0]?.v !== undefined && (path.pathpoints.length > path.points.length * 2);
 
       if (path.pathpoints && path.pathpoints.length > 1) {
         if (canGraphColor && showSpeedGradient) {

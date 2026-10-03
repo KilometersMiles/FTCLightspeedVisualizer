@@ -8,6 +8,7 @@ import './App.css';
 import TopBar from './components/TopBar';
 
 function App() {
+    const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.includes('Electron');
     const [paths, setPaths] = useState(INITIAL_PATHS);
     const [pathsTotal, setPathsTotal] = useState(1);
     const [pathLoadingStates, setPathLoadingStates] = useState({});
@@ -139,10 +140,11 @@ function App() {
     });
 
     const abortControllers = useRef({});
+    const robotMotionHandlerRef = useRef(null);
     const fileInputRef = useRef();
 
     return (
-        <div className="App Workspace-Layout">
+        <div className={`App Workspace-Layout${isElectron ? ' electron-app' : ''}`}>
             <TopBar
                 attributes={attributes}
                 setAttributes={setAttributes}
@@ -182,6 +184,7 @@ function App() {
                     showSpeedGradient={showSpeedGradient}
                     boundaryRect={boundaryRect}
                     setBoundaryRect={setBoundaryRect}
+                    robotMotionHandlerRef={robotMotionHandlerRef}
                 />
                 <SideBar
                     attributes={attributes}
@@ -221,6 +224,7 @@ function App() {
                     paths={paths}
                     robot={robot}
                     setRobot={setRobot}
+                    robotMotionHandlerRef={robotMotionHandlerRef}
                 />
             </div>
         </div>

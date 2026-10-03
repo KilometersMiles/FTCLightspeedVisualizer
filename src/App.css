@@ -127,6 +127,18 @@ body {
   margin-top: 0; /* Override old spacing margins */
 }
 
+/* Electron on lower-power GPUs is much slower at compositing large backdrop blurs. */
+.electron-app .Field-map,
+.electron-app .Side-bar,
+.electron-app .Top-bar,
+.electron-app .Bottom-playback-bar,
+.electron-app .Config-dropdown,
+.electron-app button,
+.electron-app .notification-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .Side-bar {
   /* width: 45%; */
   width: auto;
